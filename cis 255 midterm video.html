@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+
+<html lang="en">
+	<head>
+		<meta charset="UTF-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<title>Loan Amortization Calculator</title>
+
+		<style>
+			table,tr,td
+			{
+				border:solid 1px;
+				border-collapse: collapse;
+				text-align: center;
+			}
+
+			table
+			{
+				width:100%;
+			}
+
+			tr
+			{
+				height:40px;
+			}
+
+			tr:nth-child(even)
+			{
+				background-color: #f2f2f2;
+			}
+
+			thead
+			{
+				font-weight: bold;
+			}
+
+			input:read-only
+			{
+				background-color:gainsboro;
+				color:gray;
+			}
+		</style>
+	</head>
+
+	<body>
+		<h2>Loan and Amortization Calculator</h2>
+		<form id="loanForm">
+			<table>
+				<thead>
+					<tr><td>Borrowing Year</td><td>Loan Amount</td> </tr>
+				</thead>
+				<tr>
+					<td> <input type="number" id="borrowingYear1" required onchange="RefreshAllYears()"></td>
+					<td> <input type="number" id="loanAmt1" step="0.01" required></td>
+				</tr>
+
+				<tr>
+					<td> <input type="number" id="borrowingYear2" readonly tabindex="-1"></td>
+					<td> <input type="number" id="loanAmt2" step="0.01" required></td>
+				</tr>
+
+				<tr>
+					<td> <input type="number" id="borrowingYear3" readonly tabindex="-1"></td>
+					<td> <input type="number" id="loanAmt3" step="0.01" required></td>
+				</tr>
+
+				<tr>
+					<td> <input type="number" id="borrowingYear4" readonly tabindex="-1"></td>
+					<td> <input type="number" id="loanAmt4" step="0.01" required></td>
+				</tr>
+
+			</table>
+
+			<br>
+			<button type="button" onclick="calculateDebt()">Calculate</button>
+		</form>
+
+		<h3>Results</h3>
+		<p id="tableElement"></p>
+
+		<script>
+
+			function RefreshAllYears()
+			{
+				let borrowingYear1 = GetInt("borrowingYear1");
+
+				ChangeElementValueTo("borrowingYear2", borrowingYear1+1);
+				ChangeElementValueTo("borrowingYear3", borrowingYear1+2);
+				ChangeElementValueTo("borrowingYear4", borrowingYear1+3);
+			}
+
+
+
+			function GetInt(elementId)
+			{
+				let element = document.getElementById(elementId);
+				if(element == null)
+				{
+					console.log("Unable to find element with id: " + elementId);
+					return 0;
+				}
+
+				if(element.value.length == 0) // empty input, force to 0 (otherwise it will be converted into NaN)
+				{
+					element.value = 0; // show the user that this value will be forced to 0
+					return 0; // no point in parsing our static 0, so just return
+				}
+				else
+					return parseInt(element.value);
+			}
+			
+			
+			
+			function ChangeElementValueTo(elementName, value)
+			{
+				let element = document.getElementById(elementName);	
+				if(element == null)
+					console.log("Unable to find element with id: " + elementName)
+				else
+					element.value = value;
+			}
+
+
+
+			function calculateDebt()
+			{
+				const interestRate = 0.05; // 5% interest	
+				const repaymentYears = 10;
+
+				RefreshAllYears(); // in case it wasn't already refreshed
+				const borrowingYear1 = GetInt("borrowingYear1");
+
+				const loanAmount1 = GetInt("loanAmt1") * (1+interestRate) ** 3; // apply 3 years of interest to the amount from year 1 (because 3 years have elapsed)
+				const loanAmount2 = GetInt("loanAmt2") * (1+interestRate) ** 2;
+				const loanAmount3 = GetInt("loanAmt3") * (1+interestRate) ** 1;
+				const loanAmount4 = GetInt("loanAmt4"); 
+
+				const principal = loanAmount1 + loanAmount2 + loanAmount3 + loanAmount4;			
+
+				const interestRateFactor = (1+interestRate) ** repaymentYears; 
+				const periodicPaymentAmount = principal * ((interestRate * interestRateFactor) / (interestRateFactor - 1)); // this is the formula for periodic payments
+
+				GenerateTable(principal, periodicPaymentAmount, interestRate, repaymentYears);
+			}					
+
+
+
+			function GenerateTable(remainingDebt, periodicPaymentAmount, interestRate, totalYears)
+			{
+				let tableElement = document.getElementById("tableElement");
+				if(tableElement == null)
+				{
+					console.log("Unable to find element with id: tableElement");
+					return;
+				}
+
+				tableElement.innerHTML = CalculateTableHTML(remainingDebt, periodicPaymentAmount, interestRate, totalYears);
+			}
+
+
+
+			function CalculateTableHTML(remainingDebt, periodicPaymentAmount, interestRate, totalYears)
+			{
+				let html = "<table>" +
+							 	"<thead><tr>" +
+							 	"<td>Year</td><td>Payment</td><td>Interest Paid</td><td>Principal Paid</td><td>Remaining Debt</td>" +
+							 	"</thead></tr>"
+							 
+							 for(let i = 0; i < totalYears; i++)
+							 {
+							 	let yearlyPayment = periodicPaymentAmount;
+							 	let interest = remainingDebt * interestRate;
+							 	let principalRemoved = yearlyPayment - interest;
+							 	remainingDebt -= principalRemoved;
+
+							 	html += "<tr>" +
+							 				"<td>Year " + (i+1) + "</td>" +
+							 				"<td>" + ToCurrency(yearlyPayment) + "</td>" +
+							 				"<td>" + ToCurrency(interest) + "</td>" +
+							 				"<td>" + ToCurrency(principalRemoved) + "</td>" +
+							 				"<td>" + ToCurrency(remainingDebt) + "</td>" +
+							 			"</tr>"
+							 }
+
+							 html += "</table>";
+
+				return html;
+			}
+
+
+
+			// converts the passed value to $value (with 2 decimal places)
+			// example: 23.342423 becomes $23.34
+			function ToCurrency(value)
+			{
+				if(value == undefined)
+					return undefined;
+
+				return "$" + (value.toFixed(2));
+			}
+		</script>
+	</body>
+</html>
