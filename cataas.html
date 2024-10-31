@@ -19,6 +19,8 @@
     </style>
 
     <body>
+        
+        <div id = "cat2"> </div>
         <div id = "cat"> </div>
         <div id = "json">JSON</div>
     </body>
@@ -49,6 +51,7 @@
             xhr.send();
         }
 
+        let jsonObject = null;
         function FetchTagJSON()
         {
             const xhr = new XMLHttpRequest();
@@ -58,7 +61,10 @@
             xhr.onload = function(){
                 if(xhr.status == 200)
                 {
-                    document.getElementById("json").innerText = xhr.response;
+                    let jsonString = xhr.response;
+                    document.getElementById("json").innerText = jsonString;
+
+                    jsonObject = JSON.parse(jsonString);
                 }
                 else
                 {
@@ -69,8 +75,38 @@
             xhr.send();
         }
 
+
+
+        let cat2Json = null;
+        function FetchCatAsJSON()
+        {         
+            const xhr = new XMLHttpRequest();
+            xhr.open("GET", "https://cataas.com/cat?json=true", true);
+            xhr.setRequestHeader("Accept", "application/json");
+            
+            xhr.onload = function() {
+                if(xhr.status == 200)
+                {
+                    const response = JSON.parse(xhr.responseText);
+
+                    const imgURL = "https://cataas.com" + response.url;
+                    const cat2Div = document.getElementById("cat2");
+                    cat2Div.innerHTML = xhr.responseText;
+                    cat2Json = JSON.parse(xhr.responseText);
+                }
+                else
+                {
+                    console.log("Failed to load cat2 json.");
+                }
+            }
+
+            xhr.send();   
+        }
+
+
         window.onload = fetchCatImage;
         setTimeout(FetchTagJSON, 100);
+        setTimeout(FetchCatAsJSON, 100);
     </script>
 
 </html>
