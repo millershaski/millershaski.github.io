@@ -1,0 +1,76 @@
+<html>
+
+    <style>
+        #cat
+        {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        #cat img
+        {
+            max-width: 50vw;
+            max-height: 50vh;
+            width: auto;
+            height: auto;
+        }
+    </style>
+
+    <body>
+        <div id = "cat"> </div>
+        <div id = "json">JSON</div>
+    </body>
+
+    <script>
+        function fetchCatImage()
+        {
+            const xhr = new XMLHttpRequest();
+            xhr.open("GET", "https://cataas.com/cat?type=medium", true);
+            xhr.responseType = "blob"; // ensure the response is an image
+
+            xhr.onload = function() {
+                if(xhr.status == 200)
+                {
+                    const imgURL = URL.createObjectURL(xhr.response);
+                    const catDiv = document.getElementById("cat");
+                    catDiv.innerHTML = "<img src=\"" + imgURL + "\" alt = \"Random Cat\" />";            
+                    //`<img src="${imgURL}" alt = "Random Cat Image" />`;
+                }
+                else
+                {
+                    console.log("Failed to load cat image.");
+                }
+
+                setTimeout(fetchCatImage, 4000); // fetch again after 4 seconds
+            }
+
+            xhr.send();
+        }
+
+        function FetchTagJSON()
+        {
+            const xhr = new XMLHttpRequest();
+            xhr.open("GET", "https://cataas.com/api/tags", true);
+            xhr.responseType = "text";
+
+            xhr.onload = function(){
+                if(xhr.status == 200)
+                {
+                    document.getElementById("json").innerText = xhr.response;
+                }
+                else
+                {
+                    console.log("Failed to load json");        
+                }
+            }
+
+            xhr.send();
+        }
+
+        window.onload = fetchCatImage;
+        setTimeout(FetchTagJSON, 100);
+    </script>
+
+</html>
