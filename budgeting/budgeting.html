@@ -4,8 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Budgeting App</title>
-    <link rel="stylesheet" href="style.css">
-
+    
     <style>
         /* style.css */
         * {
@@ -17,15 +16,19 @@
         body {
             font-family: Arial, sans-serif;
             display: flex;
+            flex-wrap: wrap;
+            column-count: 2;
             justify-content: center;
             align-items: center;
             height: 100vh;
             background-color: #f2f2f2;
         }
 
+        /*max-width: 100%;
+            width: 100%;*/
+
         .container {
-            max-width: 100%;
-            width: 100%;
+            width: 75%;
             background: #fff;
             border-radius: 10px;
             box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
@@ -40,15 +43,30 @@
 
         .flexItem
         {
-            margin: 6px;
+            margin-left: 24px;
+            margin-top: 12px;
         }
 
 
-
-        .container, .result
+        .budgetDiv
         {
-            flex: 1, 0, 1;
+            max-width: 400px;
+            width: 400px;
         }
+
+        .result-section
+        {
+            flex-grow: 1;
+        }
+
+
+        #catDiv
+        {
+            margin: 24px;
+            width: 400px;
+        }
+
+
 
         h1 {
             font-size: 24px;
@@ -102,9 +120,14 @@
             color: #28a745;
         }
 
-        table, tr, td
-        {
+        table
+        {            
+            min-width:400px;
             width: 100%;
+        }
+
+        table, tr, td, th
+        {
             border: solid 1px;
             border-collapse: collapse;
         }
@@ -123,7 +146,7 @@
 </head>
 <body>
     <div class="container">
-        <div id = "flexItem">
+        <div class = "budgetDiv flexItem">
             <h1>Budgeting Calculator</h1>
             <div class="input-section">
                 <label for="income">Monthly Income ($):</label>
@@ -158,8 +181,8 @@
             <p id = "outputTable"></p>
         </div>
     </div>
-
-    <script src="app.js"></script>
+    <br><br><br>
+    <div id = "catDiv">A cat will go here</div>
 </body>
 
     <script>
@@ -171,6 +194,8 @@
         document.getElementById("savings").addEventListener("input", ValidateSavings);
         document.getElementById("interestRate").addEventListener("input", ValidateInterestRate);
         document.getElementById("downPayment").addEventListener("input", ValidateDownPayment);
+
+        setTimeout(fetchCatImage, 100); // fetch cat image after the page has loaded a bit (only 100ms)
 
 
         function Calculate()
@@ -388,14 +413,14 @@
             const moneyAvailablePerMonth = CalculateMoneyAvailablePerMonth();
 
             let tableArray = Array.from(Array(7), () => new Array(2));
-            let html = "<table>"
+            let html = "<table><tr><th>Interest Rate</th><th>Max House Price</th></tr>"
             for(let i = 0; i < 7; i++)
             {
                 let currentInterestRate = minInterestRate + (i * 0.005);
                 tableArray[i][0] = currentInterestRate;
                 tableArray[i][1] = CalculateMaxHomePrice(currentInterestRate, moneyAvailablePerMonth);
 
-                html += "<tr><td>" + ToFormattedNumber(tableArray[i][0], 3) + "</td><td>$" + ToFormattedNumber(tableArray[i][1]) + "</td></tr>"; 
+                html += "<tr><td>" + ToFormattedNumber(tableArray[i][0] * 100, 3) + "%" + "</td><td>$" + ToFormattedNumber(tableArray[i][1]) + "</td></tr>"; 
             }
 
             html += "</table";
@@ -417,5 +442,32 @@
             const downPayment = GetNumber("downPayment");
             return maxMonthlyHouse / (1-downPayment);
         }
+
+
+        function fetchCatImage()
+        {
+            const xhr = new XMLHttpRequest();
+            xhr.open("GET", "https://cataas.com/cat?type=medium", true);
+            xhr.responseType = "blob"; // ensure the response is an image
+
+            xhr.onload = function() {
+                if(xhr.status == 200)
+                {
+                    const imgURL = URL.createObjectURL(xhr.response);
+                    const catDiv = document.getElementById("catDiv");
+                    catDiv.innerHTML = "<img src=\"" + imgURL + "\" alt = \"Random Cat\" />";            
+                    //`<img src="${imgURL}" alt = "Random Cat Image" />`;
+                }
+                else
+                {
+                    console.log("Failed to load cat image.");
+                }
+
+                setTimeout(fetchCatImage, 4000); // fetch again after 4 seconds
+            }
+
+            xhr.send();
+        }
+
     </script>
 </html>
