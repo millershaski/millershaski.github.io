@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Budgeting App</title>
+    <link rel="stylesheet" href="style.css">
+
+    <style>
+        /* style.css */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #f2f2f2;
+        }
+
+        .container {
+            max-width: 100%;
+            width: 100%;
+            background: #fff;
+            border-radius: 10px;
+            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            text-align: center;
+
+            display: flex;
+            flex-wrap: wrap;
+        }
+
+
+
+        .flexItem
+        {
+            margin: 6px;
+        }
+
+
+
+        .container, .result
+        {
+            flex: 1, 0, 1;
+        }
+
+        h1 {
+            font-size: 24px;
+            margin-bottom: 20px;
+            color: #333;
+        }
+
+        .input-section label {
+            display: block;
+            font-size: 16px;
+            margin-top: 15px;
+            color: #555;
+        }
+
+        input[type="number"] {
+            width: 100%;
+            padding: 8px;
+            margin-top: 5px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+
+        button {
+            margin-top: 20px;
+            padding: 10px;
+            width: 100%;
+            background-color: #28a745;
+            color: white;
+            font-size: 16px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #218838;
+        }
+
+        .result-section {
+            margin-top: 30px;
+        }
+
+        h2 {
+            font-size: 20px;
+            color: #333;
+        }
+
+        .result {
+            font-weight: bold;
+            color: #28a745;
+        }
+
+        table, tr, td
+        {
+            width: 100%;
+            border: solid 1px;
+            border-collapse: collapse;
+        }
+
+        .error
+        {
+            background-color: pink;
+        }
+
+        .tooltip
+        {
+            color:red;
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div id = "flexItem">
+            <h1>Budgeting Calculator</h1>
+            <div class="input-section">
+                <label for="income">Monthly Income ($):</label>
+                <span class = "tooltip" id ="incomeError"></span>
+                <input type="number" id="income" onchange="ValidateIncome()"placeholder="e.g., 5000">
+
+                <label for="expenses">Monthly Expenses (excluding rent) ($):</label>
+                <span class = "tooltip" id ="expensesError"></span>
+                <input type="number" id="expenses" onchange = "ValidateExpenses()" placeholder="e.g., 2000">
+
+                <label for="savings">Desired Monthly Savings ($):</label>
+                <span class = "tooltip" id ="savingsError"></span>
+                <input type="number" id="savings" onchange = "ValidateSavings()" placeholder="e.g., 500">
+                
+                <label for="interestRate">Interest Rate (%):</label>
+                <span class = "tooltip" id ="interestError"></span>
+                <input type="number" id="interestRate" onchange = "ValidateInterestRate()" placeholder="e.g., 0.05">
+                
+                <label for="downPayment">Down Payment Percentage (%):</label>
+                <span class = "tooltip" id ="downPaymentError"></span>
+                <input type="number" id="downPayment" onchange = "ValidateDownPayment()" placeholder="e.g., 0.20">
+
+                <button id="calculateBtn">Calculate Available Rent</button>
+            </div>
+        </div>
+
+        <div class="result-section flexItem">
+            <h2>Results</h2>
+            <p id="rentAmount">Available for Rent: $<span class="result"></span></p>
+            <p id="housePrice">Estimated House Price: $<span class="result"></span></p>
+        
+            <p id = "outputTable"></p>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+
+    <script>
+        // registering event listeners
+        document.getElementById("calculateBtn").addEventListener("click", Calculate);
+
+        document.getElementById("income").addEventListener("input", ValidateIncome);
+        document.getElementById("expenses").addEventListener("input", ValidateExpenses);
+        document.getElementById("savings").addEventListener("input", ValidateSavings);
+        document.getElementById("interestRate").addEventListener("input", ValidateInterestRate);
+        document.getElementById("downPayment").addEventListener("input", ValidateDownPayment);
+
+
+        function Calculate()
+        {
+            ValidateAll();
+
+            let moneyAvailablePerMonth = CalculateMoneyAvailablePerMonth();
+            ChangeResultValue("rentAmount", moneyAvailablePerMonth);
+            
+            let maxMonthlyHouse = CalculateMaxHomePrice(GetNumber("interestRate"), moneyAvailablePerMonth);
+            ChangeResultValue("housePrice", maxMonthlyHouse);
+
+            PopulateResultsTable();
+        }
+
+
+        function ValidateAll()
+        {
+            ValidateIncome();
+            ValidateExpenses();
+            ValidateSavings();
+            ValidateInterestRate();
+            ValidateDownPayment();
+        }
+
+
+
+        function ValidateIncome()
+        {
+            const parentID = "income";
+            const elementID = "incomeError";
+            RemoveError(parentID, elementID);
+
+            let value = GetNumber(parentID);
+            if(value < 0)
+                DisplayError(parentID, elementID, "Values must be positive");
+        }
+
+
+
+        function ValidateExpenses()
+        {
+            const parentID = "expenses";
+            const elementID = "expensesError";
+            RemoveError(parentID, elementID);
+
+            let value = GetNumber(parentID);
+            if(value < 0)
+                DisplayError(parentID, elementID, "Values must be positive");
+        }
+
+
+
+        function ValidateSavings()
+        {            
+            const parentID = "savings";
+            const elementID = "savingsError";
+            RemoveError(parentID, elementID);
+
+            let value = GetNumber(parentID);
+            if(value < 0)
+                DisplayError(parentID, elementID, "Values must be positive");
+        }
+
+
+
+        function ValidateInterestRate()
+        {            
+            const parentID = "interestRate";
+            const elementID = "interestError";
+            RemoveError(parentID, elementID);
+
+            let value = GetNumber(parentID);
+            if(value < 0)
+                DisplayError(parentID, elementID, "Values must be positive");
+            else if(value > 1)
+                DisplayError(parentID, elementID, "Values must be in the range 0.0 - 1.0");               
+        }
+
+
+
+        function ValidateDownPayment()
+        {            
+            const parentID = "downPayment";
+            const elementID = "downPaymentError";
+            RemoveError(parentID, elementID);
+            
+            let value = GetNumber(parentID);
+            if(value < 0)
+                DisplayError(parentID, elementID, "Values must be positive");
+            else if(value > 1)
+                DisplayError(parentID, elementID, "Values must be in the range 0.0 - 1.0");    
+        }
+
+
+
+        function DisplayError(parentID, elementID, message)
+        {
+            let element = document.getElementById(elementID);
+            if(element == null)
+            {
+                console.log("Unable to find element with id: " + element);
+                return;
+            }
+
+            element.innerText = message;
+        
+            let parent = document.getElementById(parentID);
+            if(parent != null)
+                parent.classList.add("error");
+
+            // setTimeout(() => RemoveError(parent, element), 2000);
+        }
+
+
+
+        function RemoveError(parentElementID, elementID)
+        {            
+            let parentElement = document.getElementById(parentElementID);
+            if(parentElement != null)
+                parentElement.classList.remove("error");
+        
+            let element = document.getElementById(elementID);
+            if(element != null)
+                element.innerText = "";
+        }
+
+
+
+        function CalculateMoneyAvailablePerMonth()
+        {
+            let monthlyIncome = GetNumber("income");
+            let monthlyExpenses = GetNumber("expenses");
+            let targetMonthlySavings = GetNumber("savings");
+
+            return monthlyIncome - monthlyExpenses - targetMonthlySavings;
+        }
+
+
+
+        function GetNumber(elementID)
+        {
+            let element = document.getElementById(elementID);
+            if(element == null)
+            {
+                console.log("Unable to find element with ID: " + elementID);
+                return 0;
+            }
+
+            if(element.value.length == 0)
+                return 0;
+
+            return parseFloat(element.value);
+        }
+
+
+
+        function ChangeResultValue(elementID, value)
+        {
+            let element = document.getElementById(elementID);
+            if(element == null)
+            {
+                console.log("Unable to find element with ID: " + elementID);
+                return;
+            }
+
+            let resultElement = element.getElementsByClassName("result");
+            console.log(resultElement);
+            if(resultElement == null || resultElement.length == 0)
+            {
+                console.log("Unable to find result element in: " + element);
+                return;
+            }
+            
+            resultElement[0].textContent = ToFormattedNumber(value);
+        }
+
+
+
+        function ToFormattedNumber(value)
+        {
+            return ToFormattedNumber(value, 2);
+        }
+
+
+
+        function ToFormattedNumber(value, decimalCount)
+        {
+            let rawNumber = Number(value).toFixed(decimalCount);
+            return Number(rawNumber).toLocaleString();
+        }
+
+
+
+        function PopulateResultsTable()
+        {
+            let element = document.getElementById("outputTable");
+            if(element == null)
+            {
+                console.log("Unable to find element with ID: outputTable");
+                return;
+            }
+
+            element.innerHTML = CalculateTableHTML(GetNumber("interestRate"));
+        }
+
+
+
+        function CalculateTableHTML(interestRate)
+        {
+            let minInterestRate = (interestRate - (3 * 0.005)); // we're displaying 7 total interest rates, offset by 0.5%
+            if(minInterestRate < 0)
+                minInterestRate = 0; // if interest rate is small, that's okay, we'll just display more interest rates above our inputted rate. So that 7 will be still be displayed
+
+            const moneyAvailablePerMonth = CalculateMoneyAvailablePerMonth();
+
+            let tableArray = Array.from(Array(7), () => new Array(2));
+            let html = "<table>"
+            for(let i = 0; i < 7; i++)
+            {
+                let currentInterestRate = minInterestRate + (i * 0.005);
+                tableArray[i][0] = currentInterestRate;
+                tableArray[i][1] = CalculateMaxHomePrice(currentInterestRate, moneyAvailablePerMonth);
+
+                html += "<tr><td>" + ToFormattedNumber(tableArray[i][0], 3) + "</td><td>$" + ToFormattedNumber(tableArray[i][1]) + "</td></tr>"; 
+            }
+
+            html += "</table";
+            return html;
+        }
+
+
+
+        function CalculateMaxHomePrice(interest, moneyAvailablePerMonth)
+        {
+            console.log(interest + " : " + moneyAvailablePerMonth);
+
+            const r = interest/12;
+            const n = 30 * 12; // 30 year mortgage, with 12 payments per year (each month)
+
+            let maxMonthlyHouse = moneyAvailablePerMonth * (1 - Math.pow(1+r, -n));
+            maxMonthlyHouse /= r;
+
+            const downPayment = GetNumber("downPayment");
+            return maxMonthlyHouse / (1-downPayment);
+        }
+    </script>
+</html>
