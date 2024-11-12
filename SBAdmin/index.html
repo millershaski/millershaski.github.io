@@ -10,6 +10,19 @@
         <link href="https://cdn.jsdelivr.net/npm/simple-datatables@7.1.2/dist/style.min.css" rel="stylesheet" />
         <link href="css/styles.css" rel="stylesheet" />
         <script src="https://use.fontawesome.com/releases/v6.3.0/js/all.js" crossorigin="anonymous"></script>
+
+        <style>
+            #primaryCard
+            {
+                display:block;
+                margin: auto;
+            }
+            #primaryCard img
+            {
+                width:150px;
+                height:150px;
+            }
+        </style>
     </head>
     <body class="sb-nav-fixed">
         <nav class="sb-topnav navbar navbar-expand navbar-dark bg-dark">
@@ -121,6 +134,7 @@
                                     <div class="card-footer d-flex align-items-center justify-content-between">
                                         <a class="small text-white stretched-link" href="#">View Details</a>
                                         <div class="small text-white"><i class="fas fa-angle-right"></i></div>
+                                        <div id="primaryCard"></div>
                                     </div>
                                 </div>
                             </div>
@@ -684,4 +698,38 @@
         <script src="https://cdn.jsdelivr.net/npm/simple-datatables@7.1.2/dist/umd/simple-datatables.min.js" crossorigin="anonymous"></script>
         <script src="js/datatables-simple-demo.js"></script>
     </body>
+
+    <script>
+        FetchCatImage();
+
+        function FetchCatImage()
+        {
+            const fetchCat = new Promise((resolve, reject) => {
+                fetch("https://cataas.com/cat").then(response => {
+                    if(response.ok == false)
+                        reject("Failed to fetch the image");
+                    else
+                        return response.blob();
+                }).then(blob => {
+                    const imgURL = URL.createObjectURL(blob);
+                    resolve(imgURL);
+                }).catch(error => reject(error));
+            });
+
+            fetchCat.then(imgURL => {
+                const primaryCard = document.getElementById("primaryCard");
+                if(primaryCard == null)
+                {
+                    console.log("Unable to find element with ID: primaryCard");
+                    reject("Unable to find element with ID: primaryCard");
+                }
+                else
+                {
+                    primaryCard.innerHTML = "<img src=\"" + imgURL + "\"/>";
+                }
+            }).catch(error => {
+                console.error("Error occurred: " + error);
+            })
+        }
+    </script>
 </html>
