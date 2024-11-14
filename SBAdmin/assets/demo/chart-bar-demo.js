@@ -161,7 +161,7 @@ function CreateNewChart(selectedTags, allCounts)
         yAxes: [{
           ticks: {
             min: 0,
-            max: 10,
+            max: GetMaxY(allCounts),
             maxTicksLimit: 5
           },
           gridLines: {
@@ -175,6 +175,21 @@ function CreateNewChart(selectedTags, allCounts)
     }
   });
 }
+
+
+
+function GetMaxY(allCounts)
+{
+  let maxValue = 0;
+
+  allCounts.forEach(element => {
+    if(element > maxValue)
+      maxValue = element;    
+  });
+
+  return maxValue+1;
+}
+
 
 
 async function GetAllCatTagCounts(selectedTags)
