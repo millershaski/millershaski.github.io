@@ -18,6 +18,7 @@ app.use(express.static("node_modules/bootstrap/dist"));
 // so that we can process form data
 app.use(express.urlencoded({ extended: true}));
 
+// view all posts
 app.get("/", async (req, resp) =>
 {
     var allPostData = await GetAllPostData();    
@@ -99,6 +100,7 @@ function GetPostDataFilePath()
 
 
 
+// view single post
 app.get("/post/:id", async (req, resp) => 
 {
     let postId = req.params.id;
@@ -124,6 +126,7 @@ app.get("/post/:id", async (req, resp) =>
 
 
 
+// display form for adding new post
 app.get("/add", (req, resp) =>
 {
     resp.render("addPost.handlebars");
@@ -131,6 +134,7 @@ app.get("/add", (req, resp) =>
 
 
 
+// handle the POST of adding a new blog post
 app.post("/add", async (req, resp) =>
 {
     const newTitle = req.body.title;
@@ -153,64 +157,9 @@ app.post("/add", async (req, resp) =>
 
 
 app.listen(port, () => 
-    {
-        console.log(`Server is running at http://localhost:${port}`);
-    });
-
-
-/*
-expressApp.get("/test", (req: Request, res: Response) =>
 {
-    OpenFile().then((value) =>
-    {
-        if(value == null)
-        {
-            res.status(404).send("Unable to find file");
-            console.log("File was null!");
-        }
-        else
-        {        
-            console.log(value)
-            res.send(value);
-        }
-    });
+    console.log(`Server is running at http://localhost:${port}`);
 });
-
-
-
-async function OpenFile() : Promise<string | null>
-{
-    const filePath = path.join(__dirname, "..", "sample.txt");
-    
-    let data = await promises.readFile(filePath, "utf-8");
-    return data;
-}
-
-
-
-expressApp.get("/user/:id/:data", (req: Request, res: Response) =>
-{
-    let userId = req.params.id;
-    let data = req.params.data;
-});
-
-
-/*app.get("/read-file", (req: Request, res: Response) =>
-{
-    const filePath = path.join(__dirname, "..", "sample.txt");
-
-    fs.readFile(filePath, "utf-8", (err, data) =>
-    {
-        if(err)
-        {
-            res.status(500).send("Error reading file");
-        }
-        else
-        {
-            res.send(data);
-        }
-    });
-});*/
 
 
 
