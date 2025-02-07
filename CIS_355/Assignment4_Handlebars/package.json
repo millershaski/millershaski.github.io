@@ -1,0 +1,32 @@
+{
+  "name": "demo",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "server": "tsc-watch --noClear --onsuccess \"node dist/server/server.js\"",
+    "client": "webpack serve",
+    "build": "tsc",
+    "build:client": "webpack",
+    "start": "npm-run-all --parallel server client",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "Returns the contents of a server file (if found)",
+  "devDependencies": {
+    "@tsconfig/node20": "^20.1.4",
+    "@types/express": "^4.17.21",
+    "@types/node": "^22.13.1",
+    "npm-run-all": "^4.1.5",
+    "tsc-watch": "^6.0.4",
+    "typescript": "^5.7.3",
+    "webpack": "^5.97.1",
+    "webpack-cli": "^6.0.1",
+    "webpack-dev-server": "^5.2.0"
+  },
+  "dependencies": {
+    "express": "^4.21.2",
+    "express-handlebars": "^8.0.1"
+  }
+}
