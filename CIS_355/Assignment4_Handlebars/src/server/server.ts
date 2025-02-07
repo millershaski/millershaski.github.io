@@ -2,6 +2,8 @@ import express, {Express, Request, Response} from "express";
 import {promises} from "fs";
 import path from "path";
 import httpProxy from "http-proxy";
+import {engine} from "express-handlebars";
+import * as helpers from "./template_helpers"
 
 
 const expressApp: Express = express();
@@ -13,9 +15,22 @@ const proxy = httpProxy.createProxy(
     }
 );
 
+expressApp.engine("handlebars", engine());
+expressApp.set("view engine", "handlebars");
+expressApp.set("views", "templates/server");
+
+expressApp.get("/dynamic/:file", (req, resp) =>
+{
+    resp.render(`${req.params.file}.handlebars`,
+        {
+            message: "Hello template", req,
+            helpers: {...helpers}
+        });
+});
+
 expressApp.use(express.static("static"));
 expressApp.use(express.static("node_modules/bootstrap/dist"));
-expressApp.use((req, resp) => proxy.web(req, resp));
+//expressApp.use((req, resp) => proxy.web(req, resp));
 
 expressApp.get("/", (req: Request, res: Response) => 
 {
@@ -76,7 +91,7 @@ expressApp.get("/user/:id/:data", (req: Request, res: Response) =>
 });*/
 expressApp.listen(port, () => 
 {
-    console.log(`Server is running at http://localhost/${port}`);
+    console.log(`Server is running at http://localhost:${port}`);
 });
 
 
