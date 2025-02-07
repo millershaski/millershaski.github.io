@@ -113,13 +113,33 @@ async function LoadAndParseAllPostData()
 
 
 
-app.get("/post/:id", (req, resp) => 
+app.get("/post/:id", async (req, resp) => 
 {
-    resp.status(200).send("Display a single blog post here")
+    let postId = req.params.id;
+
+    const allParsed = await LoadAndParseAllPostData();
+
+    // a post id of 2 would correspond with:
+    // title: id*2
+    // content (id*2) + 1
+    const index = parseInt(postId)*2;
+    if(allParsed.length <= (index +1))
+    {
+        resp.status(404).send("404: Unable to find blog post: " + postId);
+        return;
+    }
+
+    resp.render("viewSingle.handlebars",
+        {
+            title: allParsed[index],
+            content: allParsed[index+1]                    
+        });
 });
 
 app.post("/add", (req, resp) =>
 {
+    console.log(req.query["title"] + " : " + req.query["content"]);
+    
     resp.status(200).send("Add a post here");
 });
 
