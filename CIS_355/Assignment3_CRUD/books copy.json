@@ -1,0 +1,5 @@
+[
+    {"id":1,"title":"Book1","author":"Author1","publicationYear":"year1"},
+    {"id":2,"title":"Book2","author":"Author2","publicationYear":"year2"},
+    {"id":3,"title":"myTitle","author":"myAuthor","publicationYear":"myYear"}
+]
