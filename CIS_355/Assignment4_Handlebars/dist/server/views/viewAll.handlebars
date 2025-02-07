@@ -13,8 +13,16 @@
     <!-- Calls `foo` helper, overridden at render-level. -->
     <p>{{foo}}</p>
 
-    <!-- Calls `bar` helper, defined at instance-level. -->
-    <p>{{bar}}</p>
+   
+    <p>
+        <ul class="people_list">
+        {{#each post}}
+            <h2>{{title}}</h2>
+            <p>{{content}}</p>
+        {{else}}
+            No posts
+        {{/each}}
+</ul></p>
 
 </body>
 </html>

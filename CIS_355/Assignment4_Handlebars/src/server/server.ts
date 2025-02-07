@@ -37,16 +37,81 @@ app.use(express.static("static"));
 app.use(express.static("node_modules/bootstrap/dist"));
 //app.use((req, resp) => proxy.web(req, resp));
 
-app.get("/", (req, resp) =>
+// blog post format:
+// Title
+// Body
+app.get("/", async (req, resp) =>
 {
-    resp.render("viewAll.handlebars",
-        {
-            message: "Hello template", req,
-            helpers: {...helpers}
-        });
+    var allPostData = await CreateAllPostData();
 
-    //resp.status(200).send("Display all blog posts here");
+    console.log("Found the following post data: " + allPostData);
+
+    resp.render("viewAll.handlebars",
+    {
+        post: allPostData                    
+    });
 });
+
+
+/* Data Format:
+    var data = 
+    [        
+        {
+            title: "Name1",
+            content: "This is content1"
+        },
+        {
+            title: "Name2",
+            content: "This is content2"
+        }
+    ];
+*/
+async function CreateAllPostData()
+{
+    try
+    {
+        const parsed = await LoadAndParseAllPostData();
+        let finalData = [];
+        
+        for(let i = 0; i < parsed.length; i += 2) 
+        {
+            if(parsed.length <= (i+1)) // pair not found, break
+                break;
+
+            const title = parsed[i];
+            const content = parsed[i+1];
+            // console.log(`${i}: ${title}: ${content}`);
+
+            const index = i / 2; // for whatever reason, this works. Probably a value of 1.5 automatically becomes an index value of 1
+            finalData[index] = 
+            {
+                title: title,
+                content: content
+            };
+        }
+
+        return finalData;
+    }
+    catch(error)
+    {
+        console.error("An error occurred in CreateAllPostData: " + error);
+        return {};
+    }
+}
+
+
+
+// Loads post data from postData/postData.data
+// Then returns an array using fileContents.split("\n")
+async function LoadAndParseAllPostData()
+{
+    const filePath = path.join(__dirname, "..", "postData/postData.data");
+    let fileContents = (await promises.readFile(filePath)).toString();
+
+    return fileContents.split("\n");  // data is in pairs of title, content. Separated by newlines
+}
+
+
 
 app.get("/post/:id", (req, resp) => 
 {

@@ -1,46 +1,13 @@
 "use strict";
-var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    var desc = Object.getOwnPropertyDescriptor(m, k);
-    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
-      desc = { enumerable: true, get: function() { return m[k]; } };
-    }
-    Object.defineProperty(o, k2, desc);
-}) : (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    o[k2] = m[k];
-}));
-var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
-    Object.defineProperty(o, "default", { enumerable: true, value: v });
-}) : function(o, v) {
-    o["default"] = v;
-});
-var __importStar = (this && this.__importStar) || (function () {
-    var ownKeys = function(o) {
-        ownKeys = Object.getOwnPropertyNames || function (o) {
-            var ar = [];
-            for (var k in o) if (Object.prototype.hasOwnProperty.call(o, k)) ar[ar.length] = k;
-            return ar;
-        };
-        return ownKeys(o);
-    };
-    return function (mod) {
-        if (mod && mod.__esModule) return mod;
-        var result = {};
-        if (mod != null) for (var k = ownKeys(mod), i = 0; i < k.length; i++) if (k[i] !== "default") __createBinding(result, mod, k[i]);
-        __setModuleDefault(result, mod);
-        return result;
-    };
-})();
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = __importDefault(require("express"));
+const fs_1 = require("fs");
 const path_1 = __importDefault(require("path"));
 const http_proxy_1 = __importDefault(require("http-proxy"));
 const express_handlebars_1 = require("express-handlebars");
-const helpers = __importStar(require("./template_helpers"));
 const app = (0, express_1.default)();
 const port = 3001;
 const proxy = http_proxy_1.default.createProxy({
@@ -64,13 +31,60 @@ app.set('views', path_1.default.join(__dirname, 'views'));
 app.use(express_1.default.static("static"));
 app.use(express_1.default.static("node_modules/bootstrap/dist"));
 //app.use((req, resp) => proxy.web(req, resp));
-app.get("/", (req, resp) => {
+// blog post format:
+// Title
+// Body
+app.get("/", async (req, resp) => {
+    var allPostData = await CreateAllPostData();
+    console.log("Found the following post data: " + allPostData);
     resp.render("viewAll.handlebars", {
-        message: "Hello template", req,
-        helpers: { ...helpers }
+        post: allPostData
     });
-    //resp.status(200).send("Display all blog posts here");
 });
+/* Data Format:
+    var data =
+    [
+        {
+            title: "Name1",
+            content: "This is content1"
+        },
+        {
+            title: "Name2",
+            content: "This is content2"
+        }
+    ];
+*/
+async function CreateAllPostData() {
+    try {
+        const parsed = await LoadAndParseAllPostData();
+        let finalData = [];
+        for (let i = 0; i < parsed.length; i += 2) {
+            if (parsed.length <= (i + 1)) // pair not found, break
+                break;
+            const title = parsed[i];
+            const content = parsed[i + 1];
+            // console.log(`${i}: ${title}: ${content}`);
+            const index = i / 2; // for whatever reason, this works. Probably a value of 1.5 automatically becomes an index value of 1
+            finalData[index] =
+                {
+                    title: title,
+                    content: content
+                };
+        }
+        return finalData;
+    }
+    catch (error) {
+        console.error("An error occurred in CreateAllPostData: " + error);
+        return {};
+    }
+}
+// Loads post data from postData/postData.data
+// Then returns an array using fileContents.split("\n")
+async function LoadAndParseAllPostData() {
+    const filePath = path_1.default.join(__dirname, "..", "postData/postData.data");
+    let fileContents = (await fs_1.promises.readFile(filePath)).toString();
+    return fileContents.split("\n"); // data is in pairs of title, content. Separated by newlines
+}
 app.get("/post/:id", (req, resp) => {
     resp.status(200).send("Display a single blog post here");
 });
