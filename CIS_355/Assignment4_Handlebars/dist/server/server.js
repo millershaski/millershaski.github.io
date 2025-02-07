@@ -103,7 +103,7 @@ app.post("/add", async (req, resp) => {
     const filePath = GetPostDataFilePath();
     const newData = newTitle + "\n" + newContent + "\n" + (new Date().toLocaleString()) + "\n"; // end with a newline so that the next post starts on a new-line
     await fs_1.promises.appendFile(filePath, newData);
-    resp.status(200).send("Post successfully added");
+    resp.render("postSuccess.handlebars");
 });
 app.listen(port, () => {
     console.log(`Server is running at http://localhost:${port}`);

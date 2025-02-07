@@ -148,7 +148,7 @@ app.post("/add", async (req, resp) =>
     const newData = newTitle + "\n" + newContent + "\n" + (new Date().toLocaleString()) + "\n"; // end with a newline so that the next post starts on a new-line
     await promises.appendFile(filePath, newData);
 
-    resp.status(200).send("Post successfully added");
+    resp.render("postSuccess.handlebars");
 });
 
 
