@@ -6,7 +6,7 @@ import {engine} from "express-handlebars";
 import * as helpers from "./template_helpers"
 
 
-const expressApp: Express = express();
+const app: Express = express();
 const port = 3001;
 
 const proxy = httpProxy.createProxy(
@@ -15,28 +15,57 @@ const proxy = httpProxy.createProxy(
     }
 );
 
-expressApp.engine("handlebars", engine());
-expressApp.set("view engine", "handlebars");
-expressApp.set("views", "templates/server");
+app.engine('handlebars', engine());
+app.set('view engine', 'handlebars');
+app.set('views', path.join(__dirname, 'views'));
 
-expressApp.get("/dynamic/:file", (req, resp) =>
+/*app.get("/", (req, res) => 
+{
+    res.render('home');
+});*/
+
+/*app.get("/dynamic/:file", (req, resp) =>
 {
     resp.render(`${req.params.file}.handlebars`,
         {
             message: "Hello template", req,
             helpers: {...helpers}
         });
-});
+});*/
 
-expressApp.use(express.static("static"));
-expressApp.use(express.static("node_modules/bootstrap/dist"));
-//expressApp.use((req, resp) => proxy.web(req, resp));
+app.use(express.static("static"));
+app.use(express.static("node_modules/bootstrap/dist"));
+//app.use((req, resp) => proxy.web(req, resp));
 
-expressApp.get("/", (req: Request, res: Response) => 
+app.get("/", (req, resp) =>
 {
-    res.send("Hello");
+    resp.render("viewAll.handlebars",
+        {
+            message: "Hello template", req,
+            helpers: {...helpers}
+        });
+
+    //resp.status(200).send("Display all blog posts here");
 });
 
+app.get("/post/:id", (req, resp) => 
+{
+    resp.status(200).send("Display a single blog post here")
+});
+
+app.post("/add", (req, resp) =>
+{
+    resp.status(200).send("Add a post here");
+});
+
+
+app.listen(port, () => 
+    {
+        console.log(`Server is running at http://localhost:${port}`);
+    });
+
+
+/*
 expressApp.get("/test", (req: Request, res: Response) =>
 {
     OpenFile().then((value) =>
@@ -89,10 +118,6 @@ expressApp.get("/user/:id/:data", (req: Request, res: Response) =>
         }
     });
 });*/
-expressApp.listen(port, () => 
-{
-    console.log(`Server is running at http://localhost:${port}`);
-});
 
 
 
