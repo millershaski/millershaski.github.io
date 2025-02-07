@@ -1,23 +1,21 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="utf-8">
-    <title>View All Posts</title>
-</head>
-<body>
 
-   <h1>View All Posts</h1>
-  
-   
-    <p>
-        {{#each post}}
-            <h2>{{title}}</h2>
-            <p>{{content}}</p>
-            <time>{{date}}</time>
-        {{else}}
-            No posts
-        {{/each}}
-    </p>
 
-</body>
-</html>
+  <h1>Blog Posts</h1>
+
+  <a href = "/add"> Create New Post </a>
+  </br></br>
+
+  {{#each post}}
+    <div class="post">
+        <div class="post-title">{{title}}</div>
+        <div class="post-date">{{date}}</div>
+        <div class="post-content">
+        <p>
+            {{content}}
+        </p>
+        </div>
+    </div>
+    {{else}}
+        No posts
+    {{/each}}
+

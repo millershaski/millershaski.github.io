@@ -1,39 +1,16 @@
 import express, {Express, Request, Response} from "express";
 import {promises} from "fs";
 import path from "path";
-import httpProxy from "http-proxy";
 import {engine} from "express-handlebars";
-import * as helpers from "./template_helpers"
 
 
 const app: Express = express();
 const port = 3001;
 
-const proxy = httpProxy.createProxy(
-    {
-        target: "http://localhost:5100", ws: true
-    }
-);
-
 app.engine('handlebars', engine());
 app.set('view engine', 'handlebars');
 app.set('views', path.join(__dirname, 'views'));
 
-/*app.get("/", (req, res) => 
-{
-    res.render('home');
-});*/
-
-/*app.get("/dynamic/:file", (req, resp) =>
-{
-    resp.render(`${req.params.file}.handlebars`,
-        {
-            message: "Hello template", req,
-            helpers: {...helpers}
-        });
-});*/
-
-//app.use((req, resp) => proxy.web(req, resp));
 
 app.use(express.static("static"));
 app.use(express.static("node_modules/bootstrap/dist"));
@@ -41,15 +18,9 @@ app.use(express.static("node_modules/bootstrap/dist"));
 // so that we can process form data
 app.use(express.urlencoded({ extended: true}));
 
-// blog post format:
-// Title
-// Body
 app.get("/", async (req, resp) =>
 {
-    var allPostData = await CreateAllPostData();
-
-    console.log("Found the following post data: " + allPostData);
-
+    var allPostData = await GetAllPostData();    
     resp.render("viewAll.handlebars",
     {
         post: allPostData                    
@@ -72,27 +43,29 @@ app.get("/", async (req, resp) =>
         }
     ];
 */
-async function CreateAllPostData()
+async function GetAllPostData()
 {
     try
     {
         const parsed = await LoadAndParseAllPostData();
         let finalData = [];
         
-        for(let i = 0; i < parsed.length; i += 2) 
+        for(let i = 0; i < parsed.length; i += 3) 
         {
-            if(parsed.length <= (i+1)) // pair not found, break
+            if(parsed.length <= (i+2)) // pair not found, break
                 break;
 
             const title = parsed[i];
             const content = parsed[i+1];
+            const date = parsed[i + 2];
             // console.log(`${i}: ${title}: ${content}`);
 
-            const index = i / 2; // for whatever reason, this works. Probably a value of 1.5 automatically becomes an index value of 1
+            const index = i / 3; // for whatever reason, this works. Probably a value of 1.5 automatically becomes an index value of 1
             finalData[index] = 
             {
                 title: title,
-                content: content
+                content: content,
+                date: date
             };
         }
 
@@ -138,7 +111,7 @@ app.get("/post/:id", async (req, resp) =>
     const index = parseInt(postId)*2;
     if(allParsed.length <= (index +1))
     {
-        resp.status(404).send("404: Unable to find blog post: " + postId);
+        resp.render("viewSingle404.handlebars");
         return;
     }
 
