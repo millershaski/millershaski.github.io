@@ -33,9 +33,13 @@ app.set('views', path.join(__dirname, 'views'));
         });
 });*/
 
+//app.use((req, resp) => proxy.web(req, resp));
+
 app.use(express.static("static"));
 app.use(express.static("node_modules/bootstrap/dist"));
-//app.use((req, resp) => proxy.web(req, resp));
+
+// so that we can process form data
+app.use(express.urlencoded({ extended: true}));
 
 // blog post format:
 // Title
@@ -58,11 +62,13 @@ app.get("/", async (req, resp) =>
     [        
         {
             title: "Name1",
-            content: "This is content1"
+            content: "This is content1",
+            date: date
         },
         {
             title: "Name2",
-            content: "This is content2"
+            content: "This is content2",
+            date: date
         }
     ];
 */
@@ -105,10 +111,17 @@ async function CreateAllPostData()
 // Then returns an array using fileContents.split("\n")
 async function LoadAndParseAllPostData()
 {
-    const filePath = path.join(__dirname, "..", "postData/postData.data");
+    const filePath = GetPostDataFilePath();
     let fileContents = (await promises.readFile(filePath)).toString();
 
     return fileContents.split("\n");  // data is in pairs of title, content. Separated by newlines
+}
+
+
+
+function GetPostDataFilePath()
+{
+    return path.join(__dirname, "..", "postData/postData.data");
 }
 
 
@@ -136,11 +149,33 @@ app.get("/post/:id", async (req, resp) =>
         });
 });
 
-app.post("/add", (req, resp) =>
+
+
+app.get("/add", (req, resp) =>
 {
-    console.log(req.query["title"] + " : " + req.query["content"]);
-    
-    resp.status(200).send("Add a post here");
+    resp.render("addPost.handlebars");
+});
+
+
+
+app.post("/add", async (req, resp) =>
+{
+    const newTitle = req.body.title;
+    const newContent = req.body.content;
+
+    if(newTitle == null || newContent == null || newTitle.length == 0 || newContent.length == 0)
+    {
+        resp.status(500).send("Error: title or content was empty. Failed to save");
+        return;
+    }
+    console.log(req.body.title + " : " + req.body.content);
+
+    const filePath = GetPostDataFilePath();
+
+    const newData = newTitle + "\n" + newContent + "\n" + (new Date().toLocaleString()) + "\n"; // end with a newline so that the next post starts on a new-line
+    await promises.appendFile(filePath, newData);
+
+    resp.status(200).send("Post successfully added");
 });
 
 
