@@ -11,9 +11,7 @@ app.engine('handlebars', engine());
 app.set('view engine', 'handlebars');
 app.set('views', path.join(__dirname, 'views'));
 
-
 app.use(express.static("static"));
-app.use(express.static("node_modules/bootstrap/dist"));
 
 // so that we can process form data
 app.use(express.urlencoded({ extended: true}));
@@ -21,7 +19,7 @@ app.use(express.urlencoded({ extended: true}));
 // view all posts
 app.get("/", async (req, resp) =>
 {
-    var allPostData = await GetAllPostData();    
+    const allPostData = await GetAllPostData();    
     resp.render("home.handlebars",
     {
         post: allPostData                    
@@ -59,7 +57,7 @@ async function GetAllPostData()
             try
             {
                 const finalData = JSON.parse(allSplitLines[i]);
-                finalData.index = i;
+                finalData.index = i; // index is used to populate the onclick when a title is clicked
 
                 allFinalParsedData[i] = finalData;
             }
@@ -85,17 +83,25 @@ async function GetAllPostData()
 async function LoadAndSplitAllPostData()
 {
     const filePath = GetPostDataFilePath();
-    let fileContents = (await promises.readFile(filePath)).toString();
-
-    let allSplitLines = fileContents.split("\n");  // data is in json format, separated by newlines
-
-    for(let i = allSplitLines.length-1; i >= 0; i--) // remove any empty (or short) lines
+    try
     {
-        if(allSplitLines[i].length <= 2)
-            allSplitLines.splice(i, 1);        
-    }
+        let fileContents = (await promises.readFile(filePath)).toString();
 
-    return allSplitLines;
+        let allSplitLines = fileContents.split("\n");  // data is in json format, separated by newlines
+
+        for(let i = allSplitLines.length-1; i >= 0; i--) // remove any empty (or short) lines
+        {
+            if(allSplitLines[i].length <= 2)
+                allSplitLines.splice(i, 1);        
+        }
+
+        return allSplitLines;
+    }
+    catch
+    {
+        // probably the file couldn't be found
+        return [];
+    }
 }
 
 
@@ -166,9 +172,6 @@ app.post("/add", async (req, resp) =>
         resp.status(500).send("Error: title or content was empty. Failed to save");
         return;
     }
-    // console.log(req.body.title + " : " + req.body.content);
-
-    const filePath = GetPostDataFilePath();
 
     const newObject = 
     {
@@ -176,11 +179,9 @@ app.post("/add", async (req, resp) =>
         content: newContent,
         date: (new Date().toLocaleString())
     };
-
+    
+    const filePath = GetPostDataFilePath();
     await promises.appendFile(filePath, JSON.stringify(newObject) + "\n");
-    //const newData = newTitle + "\n" + newContent + "\n" + (new Date().toLocaleString()) + "\n"; // end with a newline so that the next post starts on a new-line
-    // await promises.appendFile(filePath, newData);
-
     resp.render("postSuccess.handlebars");
 });
 
