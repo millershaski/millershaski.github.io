@@ -51,23 +51,22 @@ async function GetAllPostData()
         const parsed = await LoadAndParseAllPostData();
         let finalData = [];
         
-        for(let i = 0; i < parsed.length; i += 3) 
+        for(let i = 0; i < parsed.length; i++) 
         {
-            if(parsed.length <= (i+2)) // pair not found, break
-                break;
-
-            const title = parsed[i];
-            const content = parsed[i+1];
-            const date = parsed[i + 2];
-            // console.log(`${i}: ${title}: ${content}`);
-
-            const index = i / 3; // for whatever reason, this works. Probably a value of 1.5 automatically becomes an index value of 1
-            finalData[index] = 
+            if(parsed[i].length <= 1)
+                continue;
+            console.log(parsed[i]);
+            try
             {
-                title: title,
-                content: content,
-                date: date
-            };
+                const parsedLine = JSON.parse(parsed[i]);
+                // console.log(`${i}: ${title}: ${content}`);
+
+                finalData[i] = parsedLine;
+            }
+            catch
+            {
+                // parse probably failed
+            }
         }
 
         return finalData;
@@ -107,21 +106,27 @@ app.get("/post/:id", async (req, resp) =>
 
     const allParsed = await LoadAndParseAllPostData();
 
-    // a post id of 2 would correspond with:
-    // title: id*2
-    // content (id*2) + 1
-    const index = parseInt(postId)*2;
-    if(allParsed.length <= (index +1))
+    const index = parseInt(postId);
+    if(allParsed.length <= index)
     {
         resp.render("viewSingle404.handlebars");
         return;
     }
-
-    resp.render("viewSingle.handlebars",
+ 
+    try
+    {
+        const parsedData = JSON.parse(allParsed[index]);
+        resp.render("viewSingle.handlebars",
         {
-            title: allParsed[index],
-            content: allParsed[index+1]                    
+            title: parsedData.title,
+            content: parsedData.content,
+            date: parsedData.date                  
         });
+    }
+    catch
+    {
+        resp.render("viewSingle404.handlebars"); // parse failed
+    }
 });
 
 
@@ -131,7 +136,6 @@ app.get("/add", (req, resp) =>
 {
     resp.render("addPost.handlebars");
 });
-
 
 
 // handle the POST of adding a new blog post
@@ -145,12 +149,20 @@ app.post("/add", async (req, resp) =>
         resp.status(500).send("Error: title or content was empty. Failed to save");
         return;
     }
-    console.log(req.body.title + " : " + req.body.content);
+    // console.log(req.body.title + " : " + req.body.content);
 
     const filePath = GetPostDataFilePath();
 
-    const newData = newTitle + "\n" + newContent + "\n" + (new Date().toLocaleString()) + "\n"; // end with a newline so that the next post starts on a new-line
-    await promises.appendFile(filePath, newData);
+    const newObject = 
+    {
+        title: newTitle,
+        content: newContent,
+        date: (new Date().toLocaleString())
+    };
+
+    await promises.appendFile(filePath, JSON.stringify(newObject) + "\n");
+    //const newData = newTitle + "\n" + newContent + "\n" + (new Date().toLocaleString()) + "\n"; // end with a newline so that the next post starts on a new-line
+    // await promises.appendFile(filePath, newData);
 
     resp.render("postSuccess.handlebars");
 });
