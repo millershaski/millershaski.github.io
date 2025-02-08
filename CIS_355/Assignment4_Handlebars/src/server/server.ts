@@ -132,8 +132,7 @@ app.get("/post/:id", async (req, resp) =>
             title: parsedData.title,
             content: parsedData.content,
             date: parsedData.date,
-            index: index,
-            
+
             // the following is used for populating navigation
             hasPrevious: (index > 0),
             previousIndex: index-1,
