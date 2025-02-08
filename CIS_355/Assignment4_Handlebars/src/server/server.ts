@@ -22,7 +22,7 @@ app.use(express.urlencoded({ extended: true}));
 app.get("/", async (req, resp) =>
 {
     var allPostData = await GetAllPostData();    
-    resp.render("viewAll.handlebars",
+    resp.render("home.handlebars",
     {
         post: allPostData                    
     });

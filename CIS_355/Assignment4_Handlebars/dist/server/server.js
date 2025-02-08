@@ -19,7 +19,7 @@ app.use(express_1.default.urlencoded({ extended: true }));
 // view all posts
 app.get("/", async (req, resp) => {
     var allPostData = await GetAllPostData();
-    resp.render("viewAll.handlebars", {
+    resp.render("home.handlebars", {
         post: allPostData
     });
 });
