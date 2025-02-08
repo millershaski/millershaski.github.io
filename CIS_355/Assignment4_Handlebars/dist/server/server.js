@@ -40,22 +40,21 @@ app.get("/", async (req, resp) => {
 */
 async function GetAllPostData() {
     try {
-        const parsed = await LoadAndParseAllPostData();
-        let finalData = [];
-        for (let i = 0; i < parsed.length; i++) {
-            if (parsed[i].length <= 1)
+        const allSplitLines = await LoadAndSplitAllPostData();
+        let allFinalParsedData = [];
+        for (let i = 0; i < allSplitLines.length; i++) {
+            if (allSplitLines[i].length <= 1) // the parse will fail, so just skip (this is probably just a newline character)
                 continue;
-            console.log(parsed[i]);
             try {
-                const parsedLine = JSON.parse(parsed[i]);
-                // console.log(`${i}: ${title}: ${content}`);
-                finalData[i] = parsedLine;
+                const finalData = JSON.parse(allSplitLines[i]);
+                finalData.index = i;
+                allFinalParsedData[i] = finalData;
             }
             catch {
                 // parse probably failed
             }
         }
-        return finalData;
+        return allFinalParsedData;
     }
     catch (error) {
         console.error("An error occurred in CreateAllPostData: " + error);
@@ -64,10 +63,16 @@ async function GetAllPostData() {
 }
 // Loads post data from postData/postData.data
 // Then returns an array using fileContents.split("\n")
-async function LoadAndParseAllPostData() {
+async function LoadAndSplitAllPostData() {
     const filePath = GetPostDataFilePath();
     let fileContents = (await fs_1.promises.readFile(filePath)).toString();
-    return fileContents.split("\n"); // data is in pairs of title, content. Separated by newlines
+    let allSplitLines = fileContents.split("\n"); // data is in json format, separated by newlines
+    for (let i = allSplitLines.length - 1; i >= 0; i--) // remove any empty (or short) lines
+     {
+        if (allSplitLines[i].length <= 2)
+            allSplitLines.splice(i, 1);
+    }
+    return allSplitLines;
 }
 function GetPostDataFilePath() {
     return path_1.default.join(__dirname, "..", "postData/postData.data");
@@ -75,18 +80,26 @@ function GetPostDataFilePath() {
 // view single post
 app.get("/post/:id", async (req, resp) => {
     let postId = req.params.id;
-    const allParsed = await LoadAndParseAllPostData();
+    const allSplitLines = await LoadAndSplitAllPostData();
     const index = parseInt(postId);
-    if (allParsed.length <= index) {
+    if (allSplitLines.length <= index) // out-of-bounds
+     {
         resp.render("viewSingle404.handlebars");
         return;
     }
     try {
-        const parsedData = JSON.parse(allParsed[index]);
+        const parsedData = JSON.parse(allSplitLines[index]);
+        console.log(index + " : " + allSplitLines.length);
         resp.render("viewSingle.handlebars", {
             title: parsedData.title,
             content: parsedData.content,
-            date: parsedData.date
+            date: parsedData.date,
+            index: index,
+            // the following is used for populating navigation
+            hasPrevious: (index > 0),
+            previousIndex: index - 1,
+            hasNext: (allSplitLines.length > (index + 1)),
+            nextIndex: index + 1
         });
     }
     catch {
