@@ -7,11 +7,11 @@
 
   {{#each post}}
     <div class="post">
-        <div class="post-title">{{title}}</div>
+        <div class="post-title" onclick="location.href='/post/{{index}}'" style = "cursor:pointer;">{{title}}</div>
         <div class="post-date">{{date}}</div>
         <div class="post-content">
-        <p>
-            {{content}}
+        <p> 
+            <pre>{{content}}</pre>
         </p>
         </div>
     </div>
