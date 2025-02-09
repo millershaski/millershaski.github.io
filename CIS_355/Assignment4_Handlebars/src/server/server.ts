@@ -89,7 +89,7 @@ async function LoadAndSplitAllPostData()
 
         let allSplitLines = fileContents.split("\n");  // data is in json format, separated by newlines
 
-        for(let i = allSplitLines.length-1; i >= 0; i--) // remove any empty (or short) lines
+        for(let i = allSplitLines.length-1; i >= 0; i--) // removes any empty (or short) lines
         {
             if(allSplitLines[i].length <= 2)
                 allSplitLines.splice(i, 1);        
