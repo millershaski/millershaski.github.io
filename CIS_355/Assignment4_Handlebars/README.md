@@ -5,3 +5,7 @@ Server's port is 3001
 Titles of posts can be clicked to view them individually.
 
 Internally, all posts are stored in a single file, postData.data, in which all posts are stored as JSON, separated by newlines.
+
+Source file is located at /src/server/server.ts
+
+Handlebar layouts are located at /dist/server/views/
