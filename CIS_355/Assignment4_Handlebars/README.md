@@ -1,13 +1,7 @@
-Returns the contents of a server file (if found)
+A website that displays blog posts. New blog posts can be created by clicking the "create post" link.
 
-Server's port is 5000
+Server's port is 3001
 
-You must use route "/readFile"
-You must pass the filename as a query parameter, using key "filename".
+Title's of posts can be clicked to view them individually.
 
-Example: localhost:5000/readFile?filename=myFile.txt
-
-No other pages/routes are implemented, and will return a default response
-
-
-(There are 2 files: handler.ts and server.ts. You must compile and run the code, using npm start, or however you want to)
+Internally, all posts are stored in a single file, postData.data, in which all posts are stored as JSON, separated by newlines.
