@@ -131,8 +131,6 @@ app.get("/post/:id", async (req, resp) =>
     {
         const parsedData = JSON.parse(allSplitLines[index]);
 
-        console.log(index + " : " + allSplitLines.length);
-
         resp.render("viewSingle.handlebars",
         {
             title: parsedData.title,
