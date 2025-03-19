@@ -12,8 +12,32 @@ class Category extends Model{
 
 // TODO: Initialize the Category model
 Category.init(
+{
+  id:
+  {
+      type: DataTypes.INTEGER,
+      autoIncrement: true,
+      primaryKey: true,
+  },
+  name:
+  {
+      type: DataTypes.STRING,
+      allowNull: false
+  },
+  description:
+  {
+      type: DataTypes.STRING,
+      allowNull: false
+  }
+},
+{
+  sequelize, 
+  modelName: "Category",
+  tableName: 'Categories',  // this can be omitted, as the name will automatically be made the plural version of the modelName
+  timestamps: false, // I don't care when the records were created or updated 
+  underscored: true
+}
 );
 
-// TODO: define relationships
 
 export default Category; 

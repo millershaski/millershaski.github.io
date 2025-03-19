@@ -7,6 +7,9 @@ import Category from '../models/Category';
 export const getAllCategories = async (req: Request, res: Response) => {
   try {
     // TODO: Get all categories with their book counts
+
+        
+    res.render('categories/index', {});//, { books: plainBooks, title: 'All Books' });
    
   } catch (error) {
     console.error('Error in getAllCategories:', error);

@@ -5,9 +5,9 @@ import Book from './Book';
 
 class Author extends Model 
 {
-    declare name: string;
-    declare bio: string;
-    declare birthYear: number;
+    public name!: string;
+    public bio!: string;
+    public birthYear!: number;
 }
 
 Author.init(
@@ -43,6 +43,5 @@ Author.init(
 }
 );
 
-Author.hasMany(Book);
 
 export default Author; 

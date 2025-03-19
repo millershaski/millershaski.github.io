@@ -1,17 +1,18 @@
 import { Model, DataTypes } from 'sequelize';
 import sequelize from '../config/database';
-// TODO: Import related models
-// import Author from './Author';
-// import Category from './Category';
+import Author from './Author';
+import Category from './Category';
 
 
-class Book extends Model {
+class Book extends Model 
+{
   public id!: number;
   public title!: string;
   public isbn!: string;
   public publishedYear!: number;
   public description!: string;
 }
+
 
 Book.init(
   {
@@ -52,8 +53,13 @@ Book.init(
   }
 );
 
-// TODO: Define Book -> Author association (belongs to)
 
-// TODO: Define Book -> Category association (many-to-many)
+// defining all relationships here, so that all can be initialized first
+Book.belongsTo(Author);
+
+Book.belongsToMany(Category, {through: "BridgeTable"});
+Category.belongsToMany(Book, {through: "BridgeTable"});
+
+Author.hasMany(Book);
 
 export default Book; 

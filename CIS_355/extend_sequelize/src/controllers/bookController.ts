@@ -83,7 +83,7 @@ export const editBookForm = async (req: Request, res: Response) => {
 
 // Create a new book
 export const createBook = async (req: Request, res: Response) => {
-  try {
+  try {    
     // TODO: Handle authorId instead of author field
     const { title, author, isbn, publishedYear, description } = req.body;
     

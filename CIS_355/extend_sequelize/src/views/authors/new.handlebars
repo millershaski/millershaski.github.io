@@ -1,0 +1,64 @@
+<h1>Add New Author</h1>
+
+{{#if error}}
+<div class="alert alert-danger" role="alert">
+    {{error}}
+</div>
+{{/if}}
+
+<div class="row">
+    <div class="col-md-6">
+        <form action="/authors" method="POST">
+            <div class="mb-3">
+                <label for="name" class="form-label">Name</label>
+                <input type="text" class="form-control" id="name" name="name" value="{{author.name}}" required>
+            </div>
+
+            <!-- TODO: Replace author text field with author dropdown -->
+            <div class="mb-3">
+                <label for="bio" class="form-label">Bio</label>
+                <input type="text" class="form-control" id="bio" name="bio" value="{{author.bio}}" required>
+                
+                <!-- Author dropdown (uncomment when implementing author relationship) -->
+                <!--
+                <label for="authorId" class="form-label">Author</label>
+                <select class="form-select" id="authorId" name="authorId" required>
+                    <option value="">Select an author</option>
+                    {{#each authors}}
+                        <option value="{{id}}" {{#if (eq ../book.authorId id)}}selected{{/if}}>{{name}}</option>
+                    {{/each}}
+                </select>
+                <div class="form-text">
+                    <a href="/authors/new" target="_blank">+ Add a new author</a>
+                </div>
+                -->
+            </div>
+
+            <div class="mb-3">
+                <label for="birthYear" class="form-label">Birth Year</label>
+                <input type="number" class="form-control" id="birthYear" name="birthYear" value="{{author.birthYear}}" required>
+            </div>
+
+            <!-- TODO: Add category selection (uncomment when implementing category relationship) -->
+            <!--
+            <div class="mb-3">
+                <label for="categoryIds" class="form-label">Categories</label>
+                <select class="form-select" id="categoryIds" name="categoryIds" multiple>
+                    {{#each categories}}
+                        <option value="{{id}}">{{name}}</option>
+                    {{/each}}
+                </select>
+                <div class="form-text">
+                    Hold Ctrl (or Cmd on Mac) to select multiple categories.
+                    <a href="/categories/new" target="_blank">+ Add a new category</a>
+                </div>
+            </div>
+            -->
+
+            <div class="mb-3">
+                <button type="submit" class="btn btn-primary">Add Author</button>
+                <a href="/authors" class="btn btn-secondary">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div> 

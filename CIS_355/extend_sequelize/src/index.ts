@@ -1,7 +1,9 @@
-import express from 'express';
+import express, {Express, Request, Response} from 'express';
 import { engine } from 'express-handlebars';
 import path from 'path';
 import bookRoutes from './routes/bookRoutes';
+import categoryRoutes from "./routes/categoryRoutes";
+import authorRoutes from "./routes/authorRoutes";
 import sequelize from './config/database';
 
 // TODO: Import new route files
@@ -17,10 +19,25 @@ app.use(express.static(path.join(__dirname, 'public')));
 // Handlebars setup
 app.engine('handlebars', engine());
 app.set('view engine', 'handlebars');
-app.set('views', path.join(__dirname, 'views'));
+app.set('views', 'src/views');
+
+console.log(path.join(__dirname, 'views'));
+
+
+// logging middle-ware (placing at the top so that it's always invoked)
+app.use((req: Request, resp: Response, next) =>
+{
+    // note that duplicates are probably because of the favicon.ico request
+    console.log("A request was received: " + req.method + " for " + req.url);
+    next(); // without a next, this request will die here
+});
+  
 
 // Routes
 app.use('/books', bookRoutes);
+app.use('/categories', categoryRoutes);
+app.use('/authors', authorRoutes);
+
 // TODO: Use the new routes
 
 // TODO: Add route for dashboard
