@@ -21,8 +21,6 @@ app.engine('handlebars', engine());
 app.set('view engine', 'handlebars');
 app.set('views', 'src/views');
 
-console.log(path.join(__dirname, 'views'));
-
 
 // logging middle-ware (placing at the top so that it's always invoked)
 app.use((req: Request, resp: Response, next) =>

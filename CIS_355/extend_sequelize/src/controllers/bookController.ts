@@ -70,14 +70,22 @@ export const newBookForm = async (req: Request, res: Response) =>
 
 // Get a single book
 export const getBook = async (req: Request, res: Response) => {
-  try {
-    // TODO: Include related models when fetching a single book
-    
+  try {    
     const book = await Book.findByPk(req.params.id);
     if (!book) return res.status(404).render('error', { error: 'Book not found' });
     
-    const plainBook = book.get({ plain: true });
-    res.render('books/show', { book: plainBook, title: plainBook.title });
+	const allPlainAuthors = await GetAllPlainAuthorsFor(book);
+	const allPlainCategories = await GetAllPlainCategoriesFor(book);
+
+    const plainBook = book.get({ plain: true });	
+    res.render('books/show', 
+	{ 
+		book: plainBook, 
+		title: plainBook.title,
+		authors: allPlainAuthors,
+		categories: allPlainCategories
+	});
+
   } catch (error) {
     console.error('Error in getBook:', error);
     res.status(500).render('error', { error: 'Error fetching book' });
@@ -85,65 +93,125 @@ export const getBook = async (req: Request, res: Response) => {
 };
 
 // Show edit book form
-export const editBookForm = async (req: Request, res: Response) => {
-  try {
-    // TODO: Get the book with its related models
-    
-    const book = await Book.findByPk(req.params.id);
-    if (!book) return res.status(404).render('error', { error: 'Book not found' });
-    
-    // TODO: Get all authors and categories for form dropdowns
-    
-    // Get the selected category IDs for the book
+export const editBookForm = async (req: Request, res: Response) => 
+{
+	try 
+  	{    
+		const book = await Book.findByPk(req.params.id);
+		if(!book) 
+			return res.status(404).render('error', { error: 'Book not found' });
 
-    /*const allPlainAuthors = allAuthors.map((author) => 
-      {
-          const plainAuthor = author.get({ plain: true });
-          plainAuthor.selected = false;
-          return plainAuthor;
-      });*/
-    
-    const plainBook = book.get({ plain: true });
-    res.render('books/edit', { 
-      book: plainBook, 
-      title: `Edit ${plainBook.title}`,
-      //TODO send back authors and categories
-    });
-  } catch (error) {
-    console.error('Error in editBookForm:', error);
-    res.status(500).render('error', { error: 'Error fetching book' });
-  }
+		const allPlainAuthors = await GetAllPlainAuthorsFor(book);
+		const allPlainCategories = await GetAllPlainCategoriesFor(book);
+
+		const plainBook = book.get({ plain: true });
+		res.render('books/edit', { 
+			book: plainBook, 
+			title: `Edit ${plainBook.title}`,
+			authors: allPlainAuthors,
+			categories: allPlainCategories
+		});
+	} 
+	catch (error) 
+	{
+		console.error('Error in editBookForm:', error);
+		res.status(500).render('error', { error: 'Error fetching book' });
+  	}
 };
+
+
+
+async function GetAllPlainAuthorsFor(book: any) : Promise<any>
+{
+	let myAuthor = null;
+	if(book != null)
+		myAuthor = await book.getAuthor();
+
+	const allAuthors = await Author.findAll();
+	const allPlainAuthors = allAuthors.map((author) => 
+	{
+		const plainAuthor = author.get({ plain: true });
+		if(myAuthor != null && book != null)
+			plainAuthor.selected = myAuthor.id == author.id;
+
+		return plainAuthor;
+	});
+
+	return allPlainAuthors;
+}
+
+
+
+async function GetAllPlainCategoriesFor(book: any) : Promise<any>
+{
+	let myCategories = null;
+	if(book !== null)
+		myCategories = await book.getCategories();
+
+	const allCategories = await Category.findAll();
+	const allPlainCategories = allCategories.map((category) => 
+	{
+		const plainCategory = category.get({ plain: true });			
+		plainCategory.selected = IsCategoryIncluded(myCategories, category);
+		return plainCategory;
+	});
+
+	return allPlainCategories;
+}
+
+
+
+function IsCategoryIncluded(myCategories: any[], category: any) : boolean
+{
+	if(category == null || myCategories == null)
+		return false;
+
+	for(let someCategory of myCategories)
+	{
+		if(someCategory.id == category.id)
+			return true;
+	}
+
+	return false;
+}
+
+
 
 // Create a new book
 export const createBook = async (req: Request, res: Response) => 
 {
 	try 
 	{    
-    	const { title, authorId, isbn, publishedYear, description } = req.body;
+    	const { title, authorId, isbn, publishedYear, description, categoryIds } = req.body;
     
-		if (!title || !authorId || !isbn || !publishedYear) 
+		if (!title || !authorId || !isbn || !publishedYear || !categoryIds) 
 		{
-			// TODO: Get authors and categories for dropdown menus if validation fails
+			const allPlainAuthors = await GetAllPlainAuthorsFor(null);
+			const allPlainCategories = await GetAllPlainCategoriesFor(null);
 			
 			return res.status(400).render('books/new', 
 			{
 				error: 'Please fill in all required fields',
 				book: req.body,
+				authors: allPlainAuthors,
+				categories: allPlainCategories,
 				title: 'Add New Book',
-				//todo send back authors and categories
 			});
 		}
 
 		const existingBook = await Book.findOne({ where: { isbn } });
-		if (existingBook) {
-			// TODO: Get authors and categories for dropdown menus if validation fails
+		if (existingBook) 
+		{			
+			const allPlainAuthors = await GetAllPlainAuthorsFor(null);
+			const allPlainCategories = await GetAllPlainCategoriesFor(null);
 			
-			return res.status(400).render('books/new', {
-			error: 'A book with this ISBN already exists. ISBN must be unique.',
-			book: req.body,
-			title: 'Add New Book',
-			//todo send back authors and categories
+			return res.status(400).render('books/new', 
+			{
+				error: 'A book with this ISBN already exists. ISBN must be unique.',
+				book: req.body,
+				title: 'Add New Book',
+				authors: allPlainAuthors,
+				categories: allPlainCategories,
 			});
 		}
 
@@ -155,7 +223,13 @@ export const createBook = async (req: Request, res: Response) =>
 			description: description || ''
 		});
 
-		// TODO: Handle many-to-many relationship with categories
+		for(let categoryId of categoryIds)
+		{
+			const foundCategory = await Category.findByPk(categoryId);
+			if(foundCategory)
+				book.addCategory(foundCategory);
+		}
+		await book.save(); // not sure if we need to save the newly added categories, so just being safe 
 
 		return res.redirect('/books');
 	} 
