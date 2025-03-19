@@ -38,7 +38,6 @@ app.use('/books', bookRoutes);
 app.use('/categories', categoryRoutes);
 app.use('/authors', authorRoutes);
 
-// TODO: Use the new routes
 
 // TODO: Add route for dashboard
 
@@ -48,7 +47,8 @@ app.get('/', (req, res) => {
 
 // Database sync and server start
 const startServer = async () => {
-  try {
+  try 
+  {
     // TODO: Update sync options for development/production
     // Development: Force sync to recreate tables
     // await sequelize.sync({ force: true });
@@ -65,5 +65,6 @@ const startServer = async () => {
     console.error('Unable to start server:', error);
   }
 };
+
 
 startServer(); 
