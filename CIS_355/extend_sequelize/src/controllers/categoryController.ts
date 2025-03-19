@@ -1,21 +1,37 @@
 import { Request, Response } from 'express';
 import { Op } from 'sequelize';
 import Category from '../models/Category';
-// TODO: Import Book model
+import Book from '../models/Book';
+
 
 // Get all categories
-export const getAllCategories = async (req: Request, res: Response) => {
-  try {
-    // TODO: Get all categories with their book counts
+export const getAllCategories = async (req: Request, res: Response) => 
+{
+	try 
+	{
+		// TODO: Get all categories with their book counts
+		const allCategories = await Category.findAll();
+		const allPromises = allCategories.map(async (category) => 
+		{
+			const plainCategory = category.get({ plain: true });
 
-        
-    res.render('categories/index', {});//, { books: plainBooks, title: 'All Books' });
-   
-  } catch (error) {
-    console.error('Error in getAllCategories:', error);
-    res.status(500).render('error', { error: 'Error fetching categories' });
-  }
+			// const allBooks = await Book.findAll({where: {categoryId: category.id}});
+			plainCategory.bookCount = 0; //allBooks.length;
+
+			return plainCategory;
+		});
+
+		const allPlainCategories = await Promise.all(allPromises);
+		
+		res.render('categories/index', { categories: allPlainCategories, title: 'All Categories' });   
+	} 
+	catch (error) 
+	{
+		console.error('Error in getAllCategories:', error);
+		res.status(500).render('error', { error: 'Error fetching categories', title: "Categories" });
+	}
 };
+
 
 // Get a single category with its books
 export const getCategory = async (req: Request, res: Response) => {
@@ -28,10 +44,15 @@ export const getCategory = async (req: Request, res: Response) => {
   }
 };
 
+
+
 // Show form to create a new category
-export const newCategoryForm = (req: Request, res: Response) => {
-  res.render('categories/new', { title: 'Add New Category' });
+export const newCategoryForm = (req: Request, res: Response) => 
+{
+	res.render('categories/new', { title: 'Add New Category' });
 };
+
+
 
 // Show form to edit a category
 export const editCategoryForm = async (req: Request, res: Response) => {
@@ -45,18 +66,52 @@ export const editCategoryForm = async (req: Request, res: Response) => {
 };
 
 // Create a new category
-export const createCategory = async (req: Request, res: Response) => {
-  try {
-   //todo create new category 
-  } catch (error) {
-    console.error('Error in createCategory:', error);
-    return res.status(400).render('categories/new', {
-      error: 'Error creating category. Please check your input.',
-      category: req.body,
-      title: 'Add New Category'
-    });
-  }
+export const createCategory = async (req: Request, res: Response) => 
+{
+	try 
+	{ 
+		const {name, description } = req.body;
+		if(!name || !description) // note that this is copy-pasted below, so any changes must be duplicated there
+		{ 
+			return res.status(400).render('categories/new', 
+			{
+				error: 'Please fill in all required fields',
+				author: req.body,
+				title: 'Add New Category',
+			});
+		}
+		const match = await Category.findOne({where: {name: name} });
+		if(match) // match found, don't allow duplicate creation
+		{  
+			return res.status(400).render('categories/new', 
+			{
+				error: 'A category with this name already exists',
+				author: req.body,
+				title: 'Add New Category',
+			});
+		}
+
+		await Category.create(
+		{
+			name:name,
+			description:description
+		});
+
+		return res.redirect("/categories"); // show all categories upon success
+	} 
+	catch (error) 
+	{
+		console.error('Error in createCategory:', error);
+		return res.status(400).render('categories/new', 
+		{
+			error: 'Error creating category. Please check your input.',
+			category: req.body,
+			title: 'Add New Category'
+		});
+	}
 };
+
+
 
 // Update a category
 export const updateCategory = async (req: Request, res: Response) => {
@@ -73,13 +128,25 @@ export const updateCategory = async (req: Request, res: Response) => {
   }
 };
 
+
+
 // Delete a category
-export const deleteCategory = async (req: Request, res: Response) => {
-  try {
-    //todo implement delete
-   
-  } catch (error) {
-    console.error('Error in deleteCategory:', error);
-    return res.status(500).render('error', { error: 'Error deleting category' });
-  }
+export const deleteCategory = async (req: Request, res: Response) => 
+{
+    const id = req.params.id;
+
+	try 
+	{ 
+		const foundCategory = await Category.findByPk(id);
+        if(!foundCategory) 
+            return res.status(404).render('error', { error: 'Category not found' });
+
+        await foundCategory.destroy();
+        return res.redirect('/categories');
+	} 
+	catch (error) 
+	{
+		console.error('Error in deleteCategory:', error);
+		return res.status(500).render('error', { error: 'Error deleting category' });
+	}
 }; 

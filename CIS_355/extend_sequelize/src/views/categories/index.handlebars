@@ -6,7 +6,6 @@
     </div>
 </div>
 
-<!-- TODO: Display category list with their book counts -->
 <div class="row">
     {{#if categories.length}}
         {{#each categories}}
@@ -15,8 +14,7 @@
                     <div class="card-body">
                         <h5 class="card-title">{{name}}</h5>
                         
-                        <!-- TODO: Display book count -->
-                        <!-- <p class="card-text">Books: {{bookCount}}</p> -->
+                        <p class="card-text">Books: {{bookCount}}</p>
                         
                         {{#if description}}
                             <p class="card-text">{{description}}</p>
