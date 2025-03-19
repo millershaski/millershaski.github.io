@@ -1,15 +1,15 @@
 import { Request, Response } from 'express';
 import Book from '../models/Book';
-// TODO: Import related models
-// import Author 
-// import Category 
+import Author from '../models/Author';
+import Category from '../models/Category';
+
+
 /*
-
-
 ALL TODO'S IN THIS ARE OPTIONAL, YOU ONLY NEED TO DO THESE IF YOU WANT THE AUTHORS AND CATEGORIES TO SHOW UP IN THE FORMS AND RETURN DATA
 AGAIN THIS FILE IS OPTIONAL. YOU CAN MAKE API ENDPOINTS IN THE OTHER CONTROLLERS TO TEST YOUR NEW MODELS
-
 */
+
+
 // Get all books
 export const getAllBooks = async (req: Request, res: Response) => {
   try {
@@ -27,19 +27,29 @@ export const getAllBooks = async (req: Request, res: Response) => {
 };
 
 // Show new book form
-export const newBookForm = async (req: Request, res: Response) => {
-  try {
-    // TODO: Get authors and categories for dropdown menus
-    
-    res.render('books/new', { 
-      title: 'Add New Book',
-      //TODO send back a authors and categories for the form
-    });
-  } catch (error) {
-    console.error('Error in newBookForm:', error);
-    res.status(500).render('error', { error: 'Error loading form' });
-  }
+export const newBookForm = async (req: Request, res: Response) => 
+{
+	try 
+	{
+		// TODO: Get authors and categories for dropdown menus
+
+		const allAuthors = await Author.findAll();
+		const allPlainAuthors = allAuthors.map(author => author.get({ plain: true }));
+
+		res.render('books/new', 
+		{ 
+			title: 'Add New Book',
+			authors: allPlainAuthors
+		});
+  } 
+	catch (error) 
+	{
+		console.error('Error in newBookForm:', error);
+		res.status(500).render('error', { error: 'Error loading form' });
+	}
 };
+
+
 
 // Get a single book
 export const getBook = async (req: Request, res: Response) => {
@@ -68,6 +78,13 @@ export const editBookForm = async (req: Request, res: Response) => {
     // TODO: Get all authors and categories for form dropdowns
     
     // Get the selected category IDs for the book
+
+    /*const allPlainAuthors = allAuthors.map((author) => 
+      {
+          const plainAuthor = author.get({ plain: true });
+          plainAuthor.selected = false;
+          return plainAuthor;
+      });*/
     
     const plainBook = book.get({ plain: true });
     res.render('books/edit', { 
@@ -82,64 +99,66 @@ export const editBookForm = async (req: Request, res: Response) => {
 };
 
 // Create a new book
-export const createBook = async (req: Request, res: Response) => {
-  try {    
-    // TODO: Handle authorId instead of author field
-    const { title, author, isbn, publishedYear, description } = req.body;
+export const createBook = async (req: Request, res: Response) => 
+{
+	try 
+	{    
+    	const { title, authorId, isbn, publishedYear, description } = req.body;
     
-    if (!title || !author || !isbn || !publishedYear) {
-      // TODO: Get authors and categories for dropdown menus if validation fails
-      
-      return res.status(400).render('books/new', {
-        error: 'Please fill in all required fields',
-        book: req.body,
-        title: 'Add New Book',
-        //todo send back authors and categories
-      });
-    }
+		if (!title || !authorId || !isbn || !publishedYear) {
+			// TODO: Get authors and categories for dropdown menus if validation fails
+			
+			return res.status(400).render('books/new', {
+			error: 'Please fill in all required fields',
+			book: req.body,
+			title: 'Add New Book',
+			//todo send back authors and categories
+			});
+		}
 
-    const existingBook = await Book.findOne({ where: { isbn } });
-    if (existingBook) {
-      // TODO: Get authors and categories for dropdown menus if validation fails
-      
-      return res.status(400).render('books/new', {
-        error: 'A book with this ISBN already exists. ISBN must be unique.',
-        book: req.body,
-        title: 'Add New Book',
-        //todo send back authors and categories
-      });
-    }
+		const existingBook = await Book.findOne({ where: { isbn } });
+		if (existingBook) {
+			// TODO: Get authors and categories for dropdown menus if validation fails
+			
+			return res.status(400).render('books/new', {
+			error: 'A book with this ISBN already exists. ISBN must be unique.',
+			book: req.body,
+			title: 'Add New Book',
+			//todo send back authors and categories
+			});
+		}
 
-    // TODO: Create book with authorId instead of author field
-    
-    const book = await Book.create({
-      title,
-      author,
-      isbn,
-      publishedYear: parseInt(publishedYear, 10),
-      description: description || ''
-    });
-    
-    // TODO: Handle many-to-many relationship with categories
-    
-    return res.redirect('/books');
-  } catch (error) {
-    console.error('Error in createBook:', error);
-    
-    // TODO: Get authors and categories for dropdown menus if there's an error
-    
-    let errorMessage = 'Error creating book. Please check your input.';
-    if (error instanceof Error && error.message.includes('UNIQUE constraint failed')) {
-      errorMessage = 'A book with this ISBN already exists. ISBN must be unique.';
-    }
-    
-    return res.status(400).render('books/new', {
-      error: errorMessage,
-      book: req.body,
-      title: 'Add New Book',
-      //todo send back authors and categories
-    });
-  }
+		const book = await Book.create({
+			title,
+			authorId,
+			isbn,
+			publishedYear: parseInt(publishedYear, 10),
+			description: description || ''
+		});
+
+		// TODO: Handle many-to-many relationship with categories
+
+		return res.redirect('/books');
+	} 
+	catch (error) 
+	{
+		console.error('Error in createBook:', error);
+
+		// TODO: Get authors and categories for dropdown menus if there's an error
+
+		let errorMessage = 'Error creating book. Please check your input.';
+		if (error instanceof Error && error.message.includes('UNIQUE constraint failed')) {
+		errorMessage = 'A book with this ISBN already exists. ISBN must be unique.';
+		}
+
+		return res.status(400).render('books/new', 
+		{
+			error: errorMessage,
+			book: req.body,
+			title: 'Add New Book',
+			//todo send back authors and categories
+		});
+	}
 };
 
 // Update a book
