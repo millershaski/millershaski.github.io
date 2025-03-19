@@ -1,10 +1,10 @@
 import { Model, DataTypes } from 'sequelize';
 import sequelize from '../config/database';
-import Book from './Book';
 
 
 class Author extends Model 
 {
+    [x: string]: any; // used to suppresss compiler warning for generated getBooks method
     public id!: number;
     public name!: string;
     public bio!: string;
@@ -44,5 +44,7 @@ Author.init(
 }
 );
 
-
 export default Author; 
+
+import Book from './Book';
+Author.hasMany(Book);

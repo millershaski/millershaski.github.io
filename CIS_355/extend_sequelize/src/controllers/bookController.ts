@@ -11,16 +11,31 @@ AGAIN THIS FILE IS OPTIONAL. YOU CAN MAKE API ENDPOINTS IN THE OTHER CONTROLLERS
 
 
 // Get all books
-export const getAllBooks = async (req: Request, res: Response) => {
-  try {
-    
+export const getAllBooks = async (req: Request, res: Response) => 
+{
+  try 
+  {   
     // TODO: Include related models when fetching books
     
     const books = await Book.findAll();
-    const plainBooks = books.map(book => book.get({ plain: true }));
+    const allPromises = books.map(async (book) => 
+    {
+		const plainBook = book.get({ plain: true })
+
+		const author = await book.getAuthor();
+		if(author != null)
+			plainBook.author = author.name;		
+		else
+			plainBook.author = "Unknown"; // probably should throw an error if author can't be found
+		
+		return plainBook;
+    });
     
+    const plainBooks = await Promise.all(allPromises);
     res.render('books/index', { books: plainBooks, title: 'All Books' });
-  } catch (error) {
+  } 
+  catch (error) 
+  {
     console.error('Error in getAllBooks:', error);
     res.status(500).render('error', { error: 'Error fetching books' });
   }
@@ -31,17 +46,19 @@ export const newBookForm = async (req: Request, res: Response) =>
 {
 	try 
 	{
-		// TODO: Get authors and categories for dropdown menus
-
 		const allAuthors = await Author.findAll();
 		const allPlainAuthors = allAuthors.map(author => author.get({ plain: true }));
+
+		const allCategories = await Category.findAll();
+		const allPlainCategories = allCategories.map(category => category.get({plain: true}));
 
 		res.render('books/new', 
 		{ 
 			title: 'Add New Book',
-			authors: allPlainAuthors
+			authors: allPlainAuthors,
+			categories: allPlainCategories
 		});
-  } 
+  	} 
 	catch (error) 
 	{
 		console.error('Error in newBookForm:', error);
@@ -105,14 +122,16 @@ export const createBook = async (req: Request, res: Response) =>
 	{    
     	const { title, authorId, isbn, publishedYear, description } = req.body;
     
-		if (!title || !authorId || !isbn || !publishedYear) {
+		if (!title || !authorId || !isbn || !publishedYear) 
+		{
 			// TODO: Get authors and categories for dropdown menus if validation fails
 			
-			return res.status(400).render('books/new', {
-			error: 'Please fill in all required fields',
-			book: req.body,
-			title: 'Add New Book',
-			//todo send back authors and categories
+			return res.status(400).render('books/new', 
+			{
+				error: 'Please fill in all required fields',
+				book: req.body,
+				title: 'Add New Book',
+				//todo send back authors and categories
 			});
 		}
 
@@ -129,8 +148,8 @@ export const createBook = async (req: Request, res: Response) =>
 		}
 
 		const book = await Book.create({
-			title,
-			authorId,
+			title:title,
+			authorId:authorId,
 			isbn,
 			publishedYear: parseInt(publishedYear, 10),
 			description: description || ''

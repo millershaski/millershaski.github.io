@@ -45,10 +45,11 @@ app.get('/', (req, res) => {
   res.redirect('/books');
 });
 
+
 // Database sync and server start
 const startServer = async () => {
   try 
-  {
+  {    
     // TODO: Update sync options for development/production
     // Development: Force sync to recreate tables
     // await sequelize.sync({ force: true });

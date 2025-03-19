@@ -1,11 +1,9 @@
 import { Model, DataTypes } from 'sequelize';
 import sequelize from '../config/database';
-import Author from './Author';
-import Category from './Category';
-
 
 class Book extends Model 
 {
+  [x: string]: any; // used to suppresss compiler warning for generated getAuthor method
   public id!: number;
   public title!: string;
   public authorId!: number;
@@ -54,16 +52,17 @@ Book.init(
   {
     sequelize,
     modelName: 'Book',
+    timestamps: false, // I don't care when the records were created or updated 
+    underscored: true
   }
 );
 
-
-// defining all relationships here, so that all can be initialized first
-Book.belongsTo(Author);
-
-Book.belongsToMany(Category, {through: "BridgeTable"});
-Category.belongsToMany(Book, {through: "BridgeTable"});
-
-Author.hasMany(Book);
-
 export default Book; 
+
+
+import Author from './Author';
+import Category from './Category';
+
+// defining all relationships at the bottom of the file, so that all can be initialized first
+Book.belongsTo(Author);
+Book.belongsToMany(Category, {through: "BookCategory"});

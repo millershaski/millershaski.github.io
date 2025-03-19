@@ -9,14 +9,13 @@ export const getAllCategories = async (req: Request, res: Response) =>
 {
 	try 
 	{
-		// TODO: Get all categories with their book counts
 		const allCategories = await Category.findAll();
 		const allPromises = allCategories.map(async (category) => 
 		{
 			const plainCategory = category.get({ plain: true });
 
-			// const allBooks = await Book.findAll({where: {categoryId: category.id}});
-			plainCategory.bookCount = 0; //allBooks.length;
+			const allBooks = await category.getBooks();
+			plainCategory.bookCount = allBooks.length;
 
 			return plainCategory;
 		});

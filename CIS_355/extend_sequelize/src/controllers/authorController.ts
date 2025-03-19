@@ -1,5 +1,4 @@
 import { Request, Response } from 'express';
-import Book from '../models/Book';
 import Author from '../models/Author';
 
 
@@ -10,7 +9,7 @@ export const getAllAuthors = async (req: Request, res: Response) =>
     {
         const plainAuthor = author.get({ plain: true });
 
-        const allBooks = await Book.findAll({where: {authorId: author.id}});
+        const allBooks = await author.getBooks();
         plainAuthor.bookCount = allBooks.length;
     
         return plainAuthor;
@@ -21,10 +20,24 @@ export const getAllAuthors = async (req: Request, res: Response) =>
     res.render('authors/index', { authors: allPlainAuthors,  title: "All Authors"});
 };
 
-// TODO: Implement show author details
+
 export const getAuthor = async (req: Request, res: Response) => 
 {
-    // TODO: Get author with their books
+    const id = req.params.id;
+    const foundAuthor = await Author.findOne({ where: {id: id} });
+
+    if(!foundAuthor) // unable to find author with matching ID
+    {  
+        return res.status(400).render('authors/new', 
+        {
+            error: 'Unable to find author with id of: ' + id + ". Automatically redirected to create new author.",
+            author: req.body,
+            title: 'Create Author',
+        });
+    }
+
+    const plainAuthor = foundAuthor.get( {plain: true} );
+    res.render('authors/show', {author:plainAuthor, title: "Show Author" }); 
 };
 
 
@@ -51,7 +64,6 @@ export const editAuthorForm = async (req: Request, res: Response) =>
     }
 
     const plainAuthor = foundAuthor.get( {plain: true} );
-
     res.render('authors/edit', {author:plainAuthor, title: "Edit Author" }); 
 };
 
@@ -81,7 +93,7 @@ export const createAuthor = async (req: Request, res: Response) =>
         });
     }
 
-    await Author.create(
+    const newAuthor = await Author.create(
     {
         name:name,
         bio:bio,
@@ -129,9 +141,11 @@ export const deleteAuthor = async (req: Request, res: Response) =>
         if(!foundAuthor) 
             return res.status(404).render('error', { error: 'Author not found' });
 
-        // TODO: Check if author has books and handle them (either prevent deletion or delete books)   
-        const allBooks = await Book.findAll({where: {authorId: authorId}});
-        console.log("Found matching books: " + allBooks.length);
+        const allBooks = await foundAuthor.getBooks(); // delete all associated books
+        for(let book of allBooks)
+        {
+            await book.destroy();
+        }
 
         await foundAuthor.destroy();
         return res.redirect('/authors');

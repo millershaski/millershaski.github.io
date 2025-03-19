@@ -1,10 +1,10 @@
 import { Model, DataTypes } from 'sequelize';
 import sequelize from '../config/database';
-import Book from './Book';
 
 
 // TODO: Implement the Category model
 class Category extends Model{
+  [x: string]: any; // used to suppresss compiler warning for generated getBooks method
   public id!: number;
   public name!: string;
   public description!: string;
@@ -39,5 +39,7 @@ Category.init(
 }
 );
 
-
 export default Category; 
+
+import Book from './Book';
+Category.belongsToMany(Book, {through: "BookCategory"});
