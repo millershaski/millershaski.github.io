@@ -8,9 +8,9 @@ export const getAllAuthors = async (req: Request, res: Response) =>
     // TODO: Get all authors with their book counts
 
     const allAuthors = await Author.findAll();
-    const plainAuthors = allAuthors.map(author => author.get({ plain: true }));
+    const allPlainAuthors = allAuthors.map(author => author.get({ plain: true }));
     
-    res.render('authors/index', { authors: plainAuthors});
+    res.render('authors/index', { authors: allPlainAuthors});
 };
 
 // TODO: Implement show author details
@@ -24,19 +24,35 @@ export const newAuthorForm = async (req: Request, res: Response) =>
 }; 
 
 
-// TODO: Implement edit author form
-export const editAuthorForm = async (req: Request, res: Response) => {
-  
+
+export const editAuthorForm = async (req: Request, res: Response) => 
+{
+    const id = req.params.id;
+    const foundAuthor = await Author.findOne({ where: {id: id} });
+
+    if(!foundAuthor) // unable to find author with matching ID
+    {  
+        return res.status(400).render('authors/new', 
+        {
+            error: 'Unable to find author with id of: ' + id + ". Automatically redirected to create new author.",
+            author: req.body,
+            title: 'Edit Author',
+        });
+    }
+
+    const plainAuthor = foundAuthor.get( {plain: true} );
+
+    res.render('authors/edit', {author:plainAuthor}); 
 };
 
-// TODO: Implement create author
+
+
 export const createAuthor = async (req: Request, res: Response) => 
 {    
     console.log("Creating Author");
           
     const {name, bio, birthYear } = req.body;
-
-    if (!name || !bio || !birthYear) 
+    if (!name || !bio || !birthYear) // note that this is copy-pasted below, so any changes must be duplicated there
     { 
         return res.status(400).render('authors/new', 
         {
@@ -46,12 +62,12 @@ export const createAuthor = async (req: Request, res: Response) =>
         });
     }
     
-    const match = await Author.findOne({where: {name: name} });
+    const match = await Author.findOne({where: {name: name, birthYear:birthYear} });
     if(match) // match found, don't allow duplicate creation
     {  
         return res.status(400).render('authors/new', 
         {
-            error: 'An author with this name already exists',
+            error: 'An author with this name and birth year already exists',
             author: req.body,
             title: 'Add New Author',
         });
@@ -68,9 +84,31 @@ export const createAuthor = async (req: Request, res: Response) =>
 };
 
 
-// TODO: Implement update author
-export const updateAuthor = async (req: Request, res: Response) => {
- 
+export const updateAuthor = async (req: Request, res: Response) => 
+{
+    const id = req.params.id;
+    const foundAuthor = await Author.findOne({ where: {id: id} });
+    
+    if (!foundAuthor) 
+        return res.status(404).render('error', { error: 'Author not found' });
+
+    const {name, bio, birthYear } = req.body;
+    if (!name || !bio || !birthYear) // this is a copy-paste from above (bad design)
+    { 
+        return res.status(400).render('authors/new', 
+        {
+            error: 'Please fill in all required fields',
+            author: req.body,
+            title: 'Add New Author',
+        });
+    }
+
+    foundAuthor.name = name;
+    foundAuthor.bio = bio;
+    foundAuthor.birthYear = birthYear;
+    
+    await foundAuthor.save();    
+    return res.redirect('/authors'); // redirect to all authors upon success
 };
 
 // TODO: Implement delete author

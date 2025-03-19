@@ -1,4 +1,4 @@
-<h1>Add New Author</h1>
+<h1>Edit Author</h1>
 
 {{#if error}}
 <div class="alert alert-danger" role="alert">
@@ -8,42 +8,28 @@
 
 <div class="row">
     <div class="col-md-6">
-        <form action="/authors" method="POST">
+        <form action="/authors/{{author.id}}" method="POST">
+
             <div class="mb-3">
                 <label for="name" class="form-label">Name</label>
                 <input type="text" class="form-control" id="name" name="name" value="{{author.name}}" required>
-            </div>           
+            </div>
 
             <div class="mb-3">
                 <label for="birthYear" class="form-label">Birth Year</label>
                 <input type="number" class="form-control" id="birthYear" name="birthYear" value="{{author.birthYear}}" required>
             </div>
 
+
             <div class="mb-3">
                 <label for="bio" class="form-label">Bio</label>
                 <textarea class="form-control" id="bio" name="bio" rows="3">{{author.bio}}</textarea>
             </div>
 
-            <!-- TODO: Add category selection (uncomment when implementing category relationship) -->
-            <!--
             <div class="mb-3">
-                <label for="categoryIds" class="form-label">Categories</label>
-                <select class="form-select" id="categoryIds" name="categoryIds" multiple>
-                    {{#each categories}}
-                        <option value="{{id}}">{{name}}</option>
-                    {{/each}}
-                </select>
-                <div class="form-text">
-                    Hold Ctrl (or Cmd on Mac) to select multiple categories.
-                    <a href="/categories/new" target="_blank">+ Add a new category</a>
-                </div>
-            </div>
-            -->
-
-            <div class="mb-3">
-                <button type="submit" class="btn btn-primary">Add Author</button>
+                <button type="submit" class="btn btn-primary">Update Author</button>
                 <a href="/authors" class="btn btn-secondary">Cancel</a>
             </div>
         </form>
     </div>
-</div> 
+</div>
