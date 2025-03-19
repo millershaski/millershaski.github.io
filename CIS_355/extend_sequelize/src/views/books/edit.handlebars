@@ -1,0 +1,74 @@
+<h1>Edit Book</h1>
+
+{{#if error}}
+<div class="alert alert-danger" role="alert">
+    {{error}}
+</div>
+{{/if}}
+
+<div class="row">
+    <div class="col-md-6">
+        <form action="/books/{{book.id}}" method="POST">
+            <div class="mb-3">
+                <label for="title" class="form-label">Title</label>
+                <input type="text" class="form-control" id="title" name="title" value="{{book.title}}" required>
+            </div>
+
+            <!-- TODO: Replace author text field with author dropdown -->
+            <div class="mb-3">
+                <label for="author" class="form-label">Author</label>
+                <input type="text" class="form-control" id="author" name="author" value="{{book.author}}" required>
+                
+                <!-- Author dropdown (uncomment when implementing author relationship) -->
+                <!--
+                <label for="authorId" class="form-label">Author</label>
+                <select class="form-select" id="authorId" name="authorId" required>
+                    <option value="">Select an author</option>
+                    {{#each authors}}
+                        <option value="{{id}}" {{#if (eq ../book.authorId id)}}selected{{/if}}>{{name}}</option>
+                    {{/each}}
+                </select>
+                <div class="form-text">
+                    <a href="/authors/new" target="_blank">+ Add a new author</a>
+                </div>
+                -->
+            </div>
+
+            <div class="mb-3">
+                <label for="isbn" class="form-label">ISBN</label>
+                <input type="text" class="form-control" id="isbn" name="isbn" value="{{book.isbn}}" required>
+            </div>
+
+            <div class="mb-3">
+                <label for="publishedYear" class="form-label">Published Year</label>
+                <input type="number" class="form-control" id="publishedYear" name="publishedYear" value="{{book.publishedYear}}" required>
+            </div>
+
+            <!-- TODO: Add category selection (uncomment when implementing category relationship) -->
+            <!--
+            <div class="mb-3">
+                <label for="categoryIds" class="form-label">Categories</label>
+                <select class="form-select" id="categoryIds" name="categoryIds" multiple>
+                    {{#each categories}}
+                        <option value="{{id}}" {{#if (includes ../book.categoryIds id)}}selected{{/if}}>{{name}}</option>
+                    {{/each}}
+                </select>
+                <div class="form-text">
+                    Hold Ctrl (or Cmd on Mac) to select multiple categories.
+                    <a href="/categories/new" target="_blank">+ Add a new category</a>
+                </div>
+            </div>
+            -->
+
+            <div class="mb-3">
+                <label for="description" class="form-label">Description</label>
+                <textarea class="form-control" id="description" name="description" rows="3">{{book.description}}</textarea>
+            </div>
+
+            <div class="mb-3">
+                <button type="submit" class="btn btn-primary">Update Book</button>
+                <a href="/books" class="btn btn-secondary">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>

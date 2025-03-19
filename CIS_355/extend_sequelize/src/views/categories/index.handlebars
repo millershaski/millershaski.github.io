@@ -1,0 +1,40 @@
+<h1>Categories</h1>
+
+<div class="row mb-4">
+    <div class="col">
+        <a href="/categories/new" class="btn btn-primary">Add New Category</a>
+    </div>
+</div>
+
+<!-- TODO: Display category list with their book counts -->
+<div class="row">
+    {{#if categories.length}}
+        {{#each categories}}
+            <div class="col-md-4 mb-4">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">{{name}}</h5>
+                        
+                        <!-- TODO: Display book count -->
+                        <!-- <p class="card-text">Books: {{bookCount}}</p> -->
+                        
+                        {{#if description}}
+                            <p class="card-text">{{description}}</p>
+                        {{/if}}
+                        <div class="btn-group">
+                            <a href="/categories/{{id}}" class="btn btn-info">View</a>
+                            <a href="/categories/{{id}}/edit" class="btn btn-warning">Edit</a>
+                            <form class="d-inline" action="/categories/{{id}}/delete" method="POST" onsubmit="return confirm('Are you sure you want to delete this category?')">
+                                <button type="submit" class="btn btn-danger">Delete</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {{/each}}
+    {{else}}
+        <div class="col">
+            <p>No categories found. <a href="/categories/new">Add one now</a>!</p>
+        </div>
+    {{/if}}
+</div> 

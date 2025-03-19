@@ -1,0 +1,43 @@
+<h1>Authors</h1>
+
+<div class="row mb-4">
+    <div class="col">
+        <a href="/authors/new" class="btn btn-primary">Add New Author</a>
+    </div>
+</div>
+
+<!-- TODO: Display author list with their book counts -->
+<div class="row">
+    {{#if authors.length}}
+        {{#each authors}}
+            <div class="col-md-4 mb-4">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">{{name}}</h5>
+                        {{#if birthYear}}
+                            <h6 class="card-subtitle mb-2 text-muted">Born: {{birthYear}}</h6>
+                        {{/if}}
+                        
+                        <!-- TODO: Display book count -->
+                        <!-- <p class="card-text">Books: {{bookCount}}</p> -->
+                        
+                        {{#if bio}}
+                            <p class="card-text">{{bio}}</p>
+                        {{/if}}
+                        <div class="btn-group">
+                            <a href="/authors/{{id}}" class="btn btn-info">View</a>
+                            <a href="/authors/{{id}}/edit" class="btn btn-warning">Edit</a>
+                            <form class="d-inline" action="/authors/{{id}}/delete" method="POST" onsubmit="return confirm('Are you sure you want to delete this author?')">
+                                <button type="submit" class="btn btn-danger">Delete</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {{/each}}
+    {{else}}
+        <div class="col">
+            <p>No authors found. <a href="/authors/new">Add one now</a>!</p>
+        </div>
+    {{/if}}
+</div> 
