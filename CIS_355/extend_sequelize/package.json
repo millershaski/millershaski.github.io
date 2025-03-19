@@ -8,7 +8,8 @@
     "dev": "ts-node-dev --respawn --transpile-only src/index.ts",
     "build": "tsc",
     "clean": "if exist dist (rmdir /s /q dist) else (echo unable to find directory)",
-    "prebuild": "npm run clean"    
+    "prebuild": "npm run clean",
+    "buildAndStart": "npm run build && npm run start"    
   },
   "keywords": [
     "express",
