@@ -18,7 +18,7 @@ export const getAllAuthors = async (req: Request, res: Response) =>
 
     const allPlainAuthors = await Promise.all(allPromises);
     
-    res.render('authors/index', { authors: allPlainAuthors});
+    res.render('authors/index', { authors: allPlainAuthors,  title: "All Authors"});
 };
 
 // TODO: Implement show author details
@@ -30,7 +30,7 @@ export const getAuthor = async (req: Request, res: Response) =>
 
 export const newAuthorForm = async (req: Request, res: Response) => 
 {    
-    res.render('authors/new', {}); // note that we can pass in an author so that values are automatically populated. This is the strategy used when some data is not valid (below)
+    res.render('authors/new', {title: "New Author" }); // note that we can pass in an author so that values are automatically populated. This is the strategy used when some data is not valid (below)
 }; 
 
 
@@ -52,15 +52,13 @@ export const editAuthorForm = async (req: Request, res: Response) =>
 
     const plainAuthor = foundAuthor.get( {plain: true} );
 
-    res.render('authors/edit', {author:plainAuthor}); 
+    res.render('authors/edit', {author:plainAuthor, title: "Edit Author" }); 
 };
 
 
 
 export const createAuthor = async (req: Request, res: Response) => 
-{    
-    console.log("Creating Author");
-          
+{              
     const {name, bio, birthYear } = req.body;
     if (!name || !bio || !birthYear) // note that this is copy-pasted below, so any changes must be duplicated there
     { 
@@ -83,10 +81,10 @@ export const createAuthor = async (req: Request, res: Response) =>
         });
     }
 
-    const newAuthor = Author.create(
+    await Author.create(
     {
-        name,
-        bio,
+        name:name,
+        bio:bio,
         birthYear: parseInt(birthYear, 10)
     });    
     
@@ -123,8 +121,6 @@ export const updateAuthor = async (req: Request, res: Response) =>
 
 export const deleteAuthor = async (req: Request, res: Response) => 
 {
-    console.log("Deleting author...");
-
     const authorId = req.params.id;
 
     try 
@@ -132,7 +128,6 @@ export const deleteAuthor = async (req: Request, res: Response) =>
         const foundAuthor = await Author.findByPk(authorId);
         if(!foundAuthor) 
             return res.status(404).render('error', { error: 'Author not found' });
-
 
         // TODO: Check if author has books and handle them (either prevent deletion or delete books)   
         const allBooks = await Book.findAll({where: {authorId: authorId}});
