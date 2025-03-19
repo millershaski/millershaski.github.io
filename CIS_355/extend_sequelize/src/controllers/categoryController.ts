@@ -54,14 +54,25 @@ export const newCategoryForm = (req: Request, res: Response) =>
 
 
 // Show form to edit a category
-export const editCategoryForm = async (req: Request, res: Response) => {
-  try {
-   
-    //todo show edit form for category 
-  } catch (error) {
-    console.error('Error in editCategoryForm:', error);
-    res.status(500).render('error', { error: 'Error fetching category' });
-  }
+export const editCategoryForm = async (req: Request, res: Response) => 
+{
+	try 
+	{
+		const category = await Category.findByPk(req.params.id);
+		if(!category) 
+			return res.status(404).render('error', { error: 'Category not found' });
+
+		const plainCategory = category.get({ plain: true });
+		res.render('categories/edit', { 
+			category: plainCategory, 
+			title: `Edit ${category.name}`,
+		});
+  	} 
+	catch (error) 
+	{
+		console.error('Error in editCategoryForm:', error);
+		res.status(500).render('error', { error: 'Error fetching category' });
+  	}
 };
 
 // Create a new category
@@ -113,18 +124,31 @@ export const createCategory = async (req: Request, res: Response) =>
 
 
 // Update a category
-export const updateCategory = async (req: Request, res: Response) => {
-  try {
-    
-    //todo implement update category
-  } catch (error) {
-    console.error('Error in updateCategory:', error);
-    return res.status(400).render('categories/edit', { 
-      error: 'Error updating category. Please check your input.',
-      category: { ...req.body, id: req.params.id },
-      title: 'Edit Category'
-    });
-  }
+export const updateCategory = async (req: Request, res: Response) => 
+{
+	try 
+	{ 
+		const category = await Category.findByPk(req.params.id);
+		if (!category) return res.status(404).render('error', { error: 'Category not found' });
+		
+		const { name, description } = req.body;
+				
+		await category.update({
+		  name,
+		  description: description || ''
+		});
+				
+		return res.redirect('/categories');
+  	} 
+	catch (error) 
+	{
+		console.error('Error in updateCategory:', error);
+		return res.status(400).render('categories/edit', { 
+		error: 'Error updating category. Please check your input.',
+		category: { ...req.body, id: req.params.id },
+		title: 'Edit Category'
+	});
+  	}
 };
 
 
