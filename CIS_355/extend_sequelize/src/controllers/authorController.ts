@@ -5,18 +5,28 @@ import Author from '../models/Author';
 
 export const getAllAuthors = async (req: Request, res: Response) => 
 {
-    // TODO: Get all authors with their book counts
-
     const allAuthors = await Author.findAll();
-    const allPlainAuthors = allAuthors.map(author => author.get({ plain: true }));
+    const allPromises = allAuthors.map(async (author) => 
+    {
+        const plainAuthor = author.get({ plain: true });
+
+        const allBooks = await Book.findAll({where: {authorId: author.id}});
+        plainAuthor.bookCount = allBooks.length;
+    
+        return plainAuthor;
+    });
+
+    const allPlainAuthors = await Promise.all(allPromises);
     
     res.render('authors/index', { authors: allPlainAuthors});
 };
 
 // TODO: Implement show author details
-export const getAuthor = async (req: Request, res: Response) => {
+export const getAuthor = async (req: Request, res: Response) => 
+{
     // TODO: Get author with their books
 };
+
 
 export const newAuthorForm = async (req: Request, res: Response) => 
 {    
@@ -111,9 +121,29 @@ export const updateAuthor = async (req: Request, res: Response) =>
     return res.redirect('/authors'); // redirect to all authors upon success
 };
 
-// TODO: Implement delete author
-export const deleteAuthor = async (req: Request, res: Response) => {
- 
-    // TODO: Check if author has books and handle them (either prevent deletion or delete books)
-   
+export const deleteAuthor = async (req: Request, res: Response) => 
+{
+    console.log("Deleting author...");
+
+    const authorId = req.params.id;
+
+    try 
+    {
+        const foundAuthor = await Author.findByPk(authorId);
+        if(!foundAuthor) 
+            return res.status(404).render('error', { error: 'Author not found' });
+
+
+        // TODO: Check if author has books and handle them (either prevent deletion or delete books)   
+        const allBooks = await Book.findAll({where: {authorId: authorId}});
+        console.log("Found matching books: " + allBooks.length);
+
+        await foundAuthor.destroy();
+        return res.redirect('/authors');
+    } 
+    catch (error) 
+    {
+        console.error('Error in deleteBook:', error);
+        return res.status(500).render('error', { error: 'Error deleting book' });
+    }
 }; 

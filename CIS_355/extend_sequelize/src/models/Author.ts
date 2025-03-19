@@ -5,6 +5,7 @@ import Book from './Book';
 
 class Author extends Model 
 {
+    public id!: number;
     public name!: string;
     public bio!: string;
     public birthYear!: number;
