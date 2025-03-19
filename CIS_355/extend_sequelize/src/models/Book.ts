@@ -8,10 +8,12 @@ class Book extends Model
 {
   public id!: number;
   public title!: string;
+  public authorId!: number;
   public isbn!: string;
   public publishedYear!: number;
   public description!: string;
 }
+
 
 
 Book.init(
@@ -38,14 +40,16 @@ Book.init(
       type: DataTypes.TEXT,
       allowNull: true,
     },
-    authorId: {
+    authorId: 
+    {
       type: DataTypes.INTEGER,
       allowNull: false,
-      references: {
+      references: 
+      {
         model: 'Authors',
         key: 'id'
       }
-    },
+    }
   },
   {
     sequelize,
