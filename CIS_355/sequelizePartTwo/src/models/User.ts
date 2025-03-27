@@ -63,17 +63,17 @@ export class User extends Model {
 
     
     const allTasks = await Task.findAll({where: {userId: this.id}});
+    if(allTasks.length == 0)
+      return "0%";
+
     let finishedCount = 0;
     for(let task of allTasks)
     {
-      if(task.status == 'completed')
+      if(task.status == "completed")
         finishedCount++;
     }    
-
-    console.log("all tasks: " + allTasks.length);
-
     const asPercent = (finishedCount / allTasks.length) * 100;
-    return asPercent + '0%';
+    return asPercent + '%';
   }
 
   /**
