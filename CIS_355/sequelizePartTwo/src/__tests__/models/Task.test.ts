@@ -10,6 +10,7 @@
  * 5. Model associations
  */
 
+
 import { Sequelize } from 'sequelize';
 import { Task } from '../../models/Task';
 import { User } from '../../models/User';
@@ -78,7 +79,7 @@ describe('Task Model', () => {
     email: 'test@example.com',
     firstName: 'Test',
     lastName: 'User',
-    password: 'password123'
+    password: 'pAssword123!'
   };
 
   const mockProject = {
@@ -131,7 +132,7 @@ describe('Task Model', () => {
 
   describe('Validation', () => {
     it('should validate required fields', async () => {
-      await expect(Task.create({} as any)).rejects.toThrow();
+      await expect(Task.create({} as any)).rejects.toThrow(); // this is a poor test, as it will pass if only 1 field can't be null (tests should be explicit)
     });
 
     it('should validate title length', async () => {
@@ -168,7 +169,7 @@ describe('Task Model', () => {
         projectId: project.id
       };
       
-      await expect(Task.create(taskData)).rejects.toThrow("Validation error: Validation isIn on status failed");
+      await expect(Task.create(taskData)).rejects.toThrow("Validation error: Status had unexpected value. Look to TaskStatus for correct values");
     });
 
     it('should validate priority values', async () => {
@@ -184,7 +185,7 @@ describe('Task Model', () => {
         projectId: project.id
       };
       
-      await expect(Task.create(taskData)).rejects.toThrow("Validation error: Validation isIn on priority failed");
+      await expect(Task.create(taskData)).rejects.toThrow("Validation error: Priority had unexpected value. Look to TaskPriority for correct values");
     });
 
     it('should validate due date is in the future', async () => {

@@ -54,13 +54,16 @@ export class Task extends Model {
    * 
    * @returns boolean - true if the task's due date is in the past
    */
-  public isOverdue(): boolean {
-    //TODO: Implement this method to check if the task is overdue:
-    // 1. Compare the dueDate with the current date
-    // 2. Return true if dueDate is in the past and status is not 'completed'
-    // 3. Return false otherwise
-    return false;
+  public isOverdue(): boolean 
+  {
+    if(this.status == "completed") // completed tasks are never considered overdue
+      return false;
+
+    const currentDate = new Date();
+    return currentDate > this.dueDate;
   }
+
+
 
   /**
    * Calculate the task's progress
@@ -105,8 +108,17 @@ Task.init(
       type: DataTypes.STRING,
       allowNull: false,
       defaultValue: 'pending',
-      //TODO: Implement validation for status:
-      // 1. Must be one of: 'pending', 'in_progress', 'completed', 'cancelled'
+      validate:
+      {
+        ValidateStatus(value: any)
+        {
+          if(value == null)
+            throw new Error('Status is null');
+
+          if(value != "pending" && value != "in_progress" && value != "completed" && value != "cancelled")
+            throw new Error("Status had unexpected value. Look to TaskStatus for correct values");
+        }    
+      }
     },
     dueDate: {
       type: DataTypes.DATE,
@@ -126,6 +138,17 @@ Task.init(
       defaultValue: 'medium',
       //TODO: Implement validation for priority:
       // 1. Must be one of: 'low', 'medium', 'high'
+      validate:
+      {
+        ValidatePriority(value: any)
+        {
+          if(value == null)
+            throw new Error('Priority is null');
+
+          if(value != "low" && value != "medium" && value != "high")
+            throw new Error("Priority had unexpected value. Look to TaskPriority for correct values");
+        }    
+      }
     },
     
     userId: {
