@@ -136,8 +136,6 @@ Task.init(
       type: DataTypes.STRING,
       allowNull: false,
       defaultValue: 'medium',
-      //TODO: Implement validation for priority:
-      // 1. Must be one of: 'low', 'medium', 'high'
       validate:
       {
         ValidatePriority(value: any)
