@@ -55,13 +55,7 @@ export class User extends Model {
    * 
    * @returns Promise<string> - Completion rate percentage (e.g., "75%")
    */
-  public async getTaskCompletionRate(): Promise<string> {
-    //TODO: Implement this method to calculate the percentage of the user's tasks that are completed
-    // 1. Get all tasks belonging to this user
-    // 2. Count how many have status 'completed'
-    // 3. Calculate the percentage and return it as a string with % symbol
-
-    
+  public async getTaskCompletionRate(): Promise<string> {    
     const allTasks = await Task.findAll({where: {userId: this.id}});
     if(allTasks.length == 0)
       return "0%";
