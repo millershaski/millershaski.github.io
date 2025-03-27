@@ -58,41 +58,13 @@ describe('Tag Model', () => {
     await Tag.destroy({ where: {} });
     await Project.destroy({ where: {} });
     await User.destroy({ where: {} });
-  });
-
-  // Test data
-  const mockUser = {
-    username: 'testuser',
-    email: 'test@example.com',
-    firstName: 'Test',
-    lastName: 'User',
-    password: 'pAssword123!'
-  };
-
-  const mockProject = {
-    name: 'Test Project',
-    status: 'active' as const,
-    description: 'Test project description',
-    startDate: new Date(),
-    endDate: new Date(Date.now() + 86400000)
-  };
-
-  const createTestData = async () => {
-    const user = await User.create(mockUser);
-    const project = await Project.create({
-      ...mockProject,
-      userId: user.id
-    });
-    
-    return { user, project };
-  };
+  }); 
+  
 
   describe('Validate', () => 
   {
     it('should not allow invalid hex colors', async () => 
-    {
-      const { user, project } = await createTestData();
-      
+    {      
       const tagData = {
         name: "Tag Name",
         color: "#000000"
