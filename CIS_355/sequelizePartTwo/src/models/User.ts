@@ -12,8 +12,10 @@
 
 import { Model, DataTypes } from 'sequelize';
 import { Task } from './Task';
-import { Project } from './Project';
+import { Project, ProjectStatus } from './Project';
 import sequelize from '../config/database';
+
+
 
 /**
  * User Model Class
@@ -45,8 +47,7 @@ export class User extends Model {
    * @returns string - The user's full name
    */
   public getFullName(): string {
-    //TODO: Implement this method to concatenate the user's first and last name with a space in between
-    return '';
+    return this.firstName + " " + this.lastName;
   }
 
   /**
@@ -59,7 +60,20 @@ export class User extends Model {
     // 1. Get all tasks belonging to this user
     // 2. Count how many have status 'completed'
     // 3. Calculate the percentage and return it as a string with % symbol
-    return '0%';
+
+    
+    const allTasks = await Task.findAll({where: {userId: this.id}});
+    let finishedCount = 0;
+    for(let task of allTasks)
+    {
+      if(task.status == 'completed')
+        finishedCount++;
+    }    
+
+    console.log("all tasks: " + allTasks.length);
+
+    const asPercent = (finishedCount / allTasks.length) * 100;
+    return asPercent + '0%';
   }
 
   /**
@@ -67,10 +81,10 @@ export class User extends Model {
    * 
    * @returns Promise<number> - Number of active projects
    */
-  public async getActiveProjectsCount(): Promise<number> {
-    //TODO: Implement this method to count the number of projects where status is 'active'
-    // Use a Sequelize query with a where clause to filter by status
-    return 0;
+  public async getActiveProjectsCount(): Promise<number> 
+  {
+    const allProjects = await Project.findAll({where: {userId: this.id, status: 'active'}});
+    return allProjects.length;
   }
 
 
@@ -87,41 +101,81 @@ User.init(
     username: {
       type: DataTypes.STRING,
       allowNull: false,
-      //TODO: Implement validation for username:
-      // 1. Must be unique
-      // 2. Length between 3-30 characters
-      // 3. Can only contain alphanumeric characters (letters and numbers)
+      unique: true,
+      validate:
+      {
+        len:[3, 30],
+        ValidateUserName(value: any)
+        {
+          if((/^(?=.*[!@#$%^&*()_\-+=\[\]{};':"\\|,.<>/?])/).test(value) == true)
+            throw new Error("User name should not contain any special characters");
+        }
+      }
     },
     email: {
       type: DataTypes.STRING,
       allowNull: false,
-      //TODO: Implement validation for email:
-      // 1. Must be unique
-      // 2. Must be a valid email format
-      // 3. Normalize email to lowercase before saving
+      unique: true,
+      validate:
+      {
+        ValidateEmail(value: any)
+        {
+          if((/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/).test(value) == false)
+            throw new Error("Email is not in a valid format");
+        }
+      },      
+      set(value: any)
+      {
+        if(value == null)
+          return null;
+
+        this.setDataValue("email", value.toLowerCase());   
+      }
     },
     password: {
       type: DataTypes.STRING,
       allowNull: false,
-      //TODO: Implement validation for password:
-      // 1. Length between 8-100 characters
-      // 2. Must contain at least one uppercase letter
-      // 3. Must contain at least one number
-      // 4. Must contain at least one special character
+      validate:
+      {
+        len:[8, 100],
+        ValidatePassword(value: any)
+        {
+          if((/^(?=.*[A-Z])/).test(value) == false)
+            throw new Error("Password does not contain at least one uppercase letter");
+          
+          if((/^(?=.*[\d])/).test(value) == false)
+            throw new Error("Password does not contain at least one number");
+          
+          if((/^(?=.*[!@#$%^&*()_\-+=\[\]{};':"\\|,.<>/?])/).test(value) == false)
+            throw new Error("Password does not contain at least one special character");
+        }
+      }
     },
     firstName: {
       type: DataTypes.STRING,
       allowNull: false,
-      //TODO: Implement validation for firstName:
-      // 1. Length between 2-50 characters
-      // 2. Cannot contain numbers or special characters
+      validate:
+      {
+        len:[2, 50],
+        ValidateName(value: any)
+        {
+            if((/^(?=.*[!@#$%^&*()_\-+=\[\]{};':"\\|,.<>/?])/).test(value) == true)
+              throw new Error("firstName should not contain any special characters");
+        }
+      }
     },
     lastName: {
       type: DataTypes.STRING,
       allowNull: false,
-      //TODO: Implement validation for lastName:
-      // 1. Length between 2-50 characters
-      // 2. Cannot contain numbers or special characters
+      validate:
+      {
+        len:[2, 50],
+        ValidateName(value: any)
+        {
+            if((/^(?=.*[!@#$%^&*()_\-+=\[\]{};':"\\|,.<>/?])/).test(value) == true)
+              throw new Error("lastName should not contain any special characters");
+        }
+      }
     },   
     
     createdAt: {

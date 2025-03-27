@@ -79,7 +79,7 @@ describe('User Model', () => {
   const validUserData = {
     username: 'testuser',
     email: 'test@example.com',
-    password: 'password123',
+    password: 'pAssword123!',
     firstName: 'Test',
     lastName: 'User'
   };
@@ -100,24 +100,67 @@ describe('User Model', () => {
 
   describe('Validation', () => {
     it('should validate required fields', async () => {
-      //TODO: Implement this test
+
+      // I'm assuming that "validate required fields" means to assert that no fields with allowNull set to false can be provided a null value
+      const allNullData = {...validUserData, username: null, email: null, password: null, firstName: null, lastName: null, id: null};
+      await expect(User.create(allNullData)).rejects.toThrow();
+
+      const nonNullData = {...validUserData, username: "bobUnique", email: "bobUnique@bob.com", password: "12345679a!B", firstName: "Bob", lastName: "Smith", id: null}; // note that ID is explicitly made null
+      await expect(User.create(nonNullData)).resolves.not.toThrow();      
+
+      const nullUserName = {...validUserData, username: null};
+      await expect(User.create(nullUserName)).rejects.toThrow("User.username cannot be null");   
+
+      const nullEmail = {...validUserData, email: null};
+      await expect(User.create(nullEmail)).rejects.toThrow("User.email cannot be null");   
+      
+      const nullPassword = {...validUserData, password: null};
+      await expect(User.create(nullPassword)).rejects.toThrow("User.password cannot be null");   
+      
+      const nullFirstName = {...validUserData, firstName: null};
+      await expect(User.create(nullFirstName)).rejects.toThrow("User.firstName cannot be null");   
+      
+      const nullLastName = {...validUserData, lastName: null};
+      await expect(User.create(nullLastName)).rejects.toThrow("User.lastName cannot be null");  
     });
 
+
     it('should validate username length', async () => { 
-      //TODO: Implement this test
+
+      const shortUserName = { ...validUserData, username: "aa" };
+      await expect(User.create(shortUserName)).rejects.toThrow("Validation error: Validation len on username failed");
+            
+      const exactCorrectShortUserName = { ...validUserData, username: "abc" }; // 3 characters should pass
+      await expect(User.create(exactCorrectShortUserName)).resolves.not.toThrow();      
+
+      const exactCorrectLongUserName = { ...validUserData, email: "unique3@gmail.com", username: "aaaaabcaaaaaaaaaaaaaaaaaaaaaaa" }; // 30 characters should pass
+      await expect(User.create(exactCorrectLongUserName)).resolves.not.toThrow();      
+
+      const longUserName = { ...validUserData, username: "aaaaaaaaaaaaaaaaaaaaaaaaadcaaaa" }; // 31 should fail
+      await expect(User.create(longUserName)).rejects.toThrow("Validation error: Validation len on username failed");        
     });
 
     it('should validate email format', async () => {
-       //TODO: Implement this test
+      
+      const noAt = {...validUserData, email:"bob.com"};
+      await expect(User.create(noAt)).rejects.toThrow("Email is not in a valid format");
+
+      const noDot = {...validUserData, email:"bob@com"};
+      await expect(User.create(noDot)).rejects.toThrow("Email is not in a valid format");
+      
+      const valid = {...validUserData, email:"bob@bob.com"};
+      await expect(User.create(valid)).resolves.not.toThrow();
     });
 
     it('should validate password length', async () => {
-      const shortPassword = { ...validUserData, password: '12345' };
+
+      await expect("").rejects
+      const shortPassword = { ...validUserData, password: '12A!5' };
       await expect(User.create(shortPassword))
         .rejects
         .toThrow("Validation error: Validation len on password failed");
 
-      const longPassword = { ...validUserData, password: 'a'.repeat(101) };
+      const longPassword = { ...validUserData, password: 'A1!'.repeat(101) };
       await expect(User.create(longPassword))
         .rejects
         .toThrow("Validation error: Validation len on password failed");
@@ -138,7 +181,10 @@ describe('User Model', () => {
 
   describe('Instance Methods', () => {
     it('should return full name correctly', async () => {
-       //TODO: Implement this test
+
+       const data = {...validUserData, firstName: "bob", lastName: "smith"};
+       const user = await User.create(data);
+       expect(user.getFullName()).toBe("bob smith");
     });
 
     it('should calculate task completion rate', async () => {
