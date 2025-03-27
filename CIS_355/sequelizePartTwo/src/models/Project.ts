@@ -54,14 +54,21 @@ export class Project extends Model {
    * 
    * @returns Promise<string> - Progress percentage (e.g., "75%")
    */
-  public async getProgress(): Promise<string> {
-    //TODO: Implement this method to calculate project progress:
-    // 1. Get all tasks associated with the project
-    // 2. Calculate the percentage of completed tasks
-    // 3. Return the progress as a percentage string
-    return '0%';
-  }
+  public async getProgress(): Promise<string> 
+  {
+    const allTasks = await Task.findAll({where: {projectId: this.id}});
+    if(allTasks.length == 0)
+      return "0%";
 
+    let finishedCount = 0;
+    for(let task of allTasks)
+    {
+      if(task.status == "completed")
+        finishedCount++;
+    }    
+    const asPercent = (finishedCount / allTasks.length) * 100;
+    return asPercent + '%';
+  }
 }
 
 // Initialize the Project model with Sequelize
@@ -87,8 +94,17 @@ Project.init(
       type: DataTypes.STRING,
       allowNull: false,
       defaultValue: 'active',
-      //TODO: Implement validation for status:
-      // 1. Must be one of: 'active', 'completed', 'on_hold', 'cancelled'
+      validate:
+      {
+        ValidateStatus(value: any)
+        {
+          if(value == null)
+            throw new Error('Status is null');
+
+          if(value != "active" && value != "completed" && value != "on_hold" && value != "cancelled")
+            throw new Error("Status had unexpected value. Look to ProjectStatus for correct values");
+        }    
+      }
     },
     startDate: {
       type: DataTypes.DATE,
