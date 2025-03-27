@@ -61,8 +61,17 @@ Tag.init(
       type: DataTypes.STRING,
       allowNull: false,
       defaultValue: '#3498db', // Default color
-      //TODO: Implement validation for color:
-      // 1. Must be a valid hex color code
+      validate:
+      {
+        ValidateColor(value: any)
+        {
+          if(value == null)
+            throw new Error("Color is null");
+
+          if((/^#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/).test(value) == false)
+            throw new Error("Color is not a valid hex code")
+        }
+      }
     },    
     
     createdAt: {
