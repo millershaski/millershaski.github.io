@@ -52,22 +52,23 @@ Tag.belongsToMany(Task, {
 
 // Add global hooks for all models
 //TODO: Implement global hooks for logging model changes
-/*
+
 // This hook will be called whenever any model is created
 sequelize.addHook('afterCreate', (instance, options) => {
-  // Log the creation of a new record
+  console.log("Record created: " + instance);
 });
 
 // This hook will be called whenever any model is updated
 sequelize.addHook('afterUpdate', (instance, options) => {
-  // Log the update of a record
+  
+  console.log("Record updated: " + instance);
 });
 
 // This hook will be called whenever any model is deleted
-sequelize.addHook('afterDestroy', (instance, options) => {
-  // Log the deletion  of a record
+sequelize.addHook('afterDestroy', (instance, options) => {  
+  console.log("Record deleted: " + instance);
 });
-*/
+
 
 // Export all models
 export { User, Task, Project, Tag, sequelize }; 
