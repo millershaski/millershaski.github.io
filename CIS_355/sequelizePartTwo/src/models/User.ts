@@ -153,8 +153,11 @@ User.init(
         len:[2, 50],
         ValidateName(value: any)
         {
-            if((/^(?=.*[!@#$%^&*()_\-+=\[\]{};':"\\|,.<>/?])/).test(value) == true)
-              throw new Error("firstName should not contain any special characters");
+          if((/^(?=.*[\d])/).test(value) == true)
+            throw new Error("lastName should not contain any numbers");
+
+          if((/^(?=.*[!@#$%^&*()_\-+=\[\]{};':"\\|,.<>/?])/).test(value) == true)
+            throw new Error("firstName should not contain any special characters");
         }
       }
     },
@@ -166,6 +169,9 @@ User.init(
         len:[2, 50],
         ValidateName(value: any)
         {
+          if((/^(?=.*[\d])/).test(value) == true)
+            throw new Error("lastName should not contain any numbers");
+
             if((/^(?=.*[!@#$%^&*()_\-+=\[\]{};':"\\|,.<>/?])/).test(value) == true)
               throw new Error("lastName should not contain any special characters");
         }

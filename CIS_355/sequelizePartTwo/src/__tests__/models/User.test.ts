@@ -177,6 +177,14 @@ describe('User Model', () => {
         .rejects
         .toThrow("Validation error: Validation len on firstName failed");
     });
+
+    it('should validate name nonnumber', async () => {
+      const badFirstName = { ...validUserData, firstName: 'appleJohn1' };
+      await expect(User.create(badFirstName)).rejects.toThrow();
+
+      const badLastName = { ...validUserData, lastName: 'appleJohn1' };
+      await expect(User.create(badLastName)).rejects.toThrow();
+    });
   });
 
   describe('Instance Methods', () => {
