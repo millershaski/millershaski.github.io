@@ -50,23 +50,20 @@ Tag.belongsToMany(Task, {
 });
 
 
-// Add global hooks for all models
-//TODO: Implement global hooks for logging model changes
-
 // This hook will be called whenever any model is created
 sequelize.addHook('afterCreate', (instance, options) => {
-  console.log("Record created: " + instance);
+  console.log("Record created: " + JSON.stringify(instance, null, 2));
 });
 
 // This hook will be called whenever any model is updated
 sequelize.addHook('afterUpdate', (instance, options) => {
   
-  console.log("Record updated: " + instance);
+  console.log("Record updated: " + JSON.stringify(instance, null, 2));
 });
 
 // This hook will be called whenever any model is deleted
 sequelize.addHook('afterDestroy', (instance, options) => {  
-  console.log("Record deleted: " + instance);
+  console.log("Record deleted: " + JSON.stringify(instance, null, 2));
 });
 
 
