@@ -203,12 +203,13 @@ class GameModel extends ChangeNotifier {
 
   // 0..1 fill for the ability buttons.
   double progressOf(Ability a) => switch (a) {
-        Ability.gun => 1,
-        Ability.shield => shieldActive > 0
-            ? shieldActive / shieldDuration
-            : 1 - shieldRecharge / shieldRechargeTime,
-        Ability.emp => 1 - empCooldown / empCooldownTime,
-      };
+    Ability.gun => 1,
+    Ability.shield =>
+      shieldActive > 0
+          ? shieldActive / shieldDuration
+          : 1 - shieldRecharge / shieldRechargeTime,
+    Ability.emp => 1 - empCooldown / empCooldownTime,
+  };
 
   double get shipTop => vh - 30;
   double get shipCenterY => shipTop + shipHeight / 2;
@@ -220,11 +221,13 @@ class GameModel extends ChangeNotifier {
     vh = newSize.height / scale;
     if (stars.isEmpty) {
       for (var i = 0; i < 70; i++) {
-        stars.add(Star(
-          _rng.nextDouble() * virtualWidth,
-          _rng.nextDouble() * vh,
-          0.2 + _rng.nextDouble() * 0.8,
-        ));
+        stars.add(
+          Star(
+            _rng.nextDouble() * virtualWidth,
+            _rng.nextDouble() * vh,
+            0.2 + _rng.nextDouble() * 0.8,
+          ),
+        );
       }
     }
   }
@@ -308,10 +311,13 @@ class GameModel extends ChangeNotifier {
     if (_ufoSpawnTimer <= 0) {
       _ufoSpawnTimer = math.max(6, 14 - elapsed * 0.08);
       if (ufos.length < (elapsed > 90 ? 3 : 2)) {
-        ufos.add(Ufo(
-          ufoHalfWidth + _rng.nextDouble() * (virtualWidth - 2 * ufoHalfWidth),
-          1.5,
-        ));
+        ufos.add(
+          Ufo(
+            ufoHalfWidth +
+                _rng.nextDouble() * (virtualWidth - 2 * ufoHalfWidth),
+            1.5,
+          ),
+        );
       }
     }
 
@@ -338,16 +344,20 @@ class GameModel extends ChangeNotifier {
 
       u.fireTimer -= dt;
       if (u.fireTimer <= 0 && u.y > 4) {
-        u.fireTimer = math.max(0.9, 2.2 - elapsed * 0.01) + _rng.nextDouble() * 0.8;
-        final angle = math.atan2(shipCenterY - u.y, shipX - u.x) +
+        u.fireTimer =
+            math.max(0.9, 2.2 - elapsed * 0.01) + _rng.nextDouble() * 0.8;
+        final angle =
+            math.atan2(shipCenterY - u.y, shipX - u.x) +
             (_rng.nextDouble() - 0.5) * 0.3;
         const shotSpeed = 80.0;
-        shots.add(EnemyShot(
-          u.x,
-          u.y + ufoHalfHeight,
-          math.cos(angle) * shotSpeed,
-          math.sin(angle) * shotSpeed,
-        ));
+        shots.add(
+          EnemyShot(
+            u.x,
+            u.y + ufoHalfHeight,
+            math.cos(angle) * shotSpeed,
+            math.sin(angle) * shotSpeed,
+          ),
+        );
       }
     }
   }
@@ -390,12 +400,14 @@ class GameModel extends ChangeNotifier {
       if (_spawnTimer <= 0) {
         _spawnTimer = _spawnInterval;
         final r = 3 + _rng.nextInt(4);
-        asteroids.add(Asteroid.create(
-          _rng,
-          r + _rng.nextDouble() * (virtualWidth - 2 * r),
-          -r.toDouble(),
-          r,
-        ));
+        asteroids.add(
+          Asteroid.create(
+            _rng,
+            r + _rng.nextDouble() * (virtualWidth - 2 * r),
+            -r.toDouble(),
+            r,
+          ),
+        );
       }
 
       _updateAbilities(dt);
@@ -501,111 +513,104 @@ class _GameScreenState extends State<GameScreen>
 
   Widget _buildGameArea() {
     return LayoutBuilder(
-          builder: (context, constraints) {
-            _game.setSize(constraints.biggest);
-            return GestureDetector(
-              behavior: HitTestBehavior.opaque,
-              onTap: _game.useAbility,
-              onHorizontalDragUpdate: (d) => _game.moveShip(d.delta.dx),
-              child: Stack(
-                fit: StackFit.expand,
-                children: [
-                  Positioned.fill(
-                    child: CustomPaint(painter: GamePainter(_game)),
-                  ),
-                  Positioned(
-                    top: 8,
-                    left: 16,
-                    right: 8,
-                    child: Row(
+      builder: (context, constraints) {
+        _game.setSize(constraints.biggest);
+        return GestureDetector(
+          behavior: HitTestBehavior.opaque,
+          onTap: _game.useAbility,
+          onHorizontalDragUpdate: (d) => _game.moveShip(d.delta.dx),
+          child: Stack(
+            fit: StackFit.expand,
+            children: [
+              Positioned.fill(child: CustomPaint(painter: GamePainter(_game))),
+              Positioned(
+                top: 8,
+                left: 16,
+                right: 8,
+                child: Row(
+                  children: [
+                    ListenableBuilder(
+                      listenable: _game,
+                      builder: (_, _) => Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text('SCORE ${_game.score.floor()}', style: hudStyle),
+                          Text(
+                            'COINS ${_game.coins}',
+                            style: hudStyle.copyWith(color: Colors.amberAccent),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const Spacer(),
+                    IconButton.filledTonal(
+                      tooltip: 'Restart',
+                      onPressed: _game.restart,
+                      style: IconButton.styleFrom(
+                        shape: const RoundedRectangleBorder(),
+                      ),
+                      icon: const Icon(Icons.refresh),
+                    ),
+                  ],
+                ),
+              ),
+              ListenableBuilder(
+                listenable: _game,
+                builder: (_, _) {
+                  if (!_game.isOver) return const SizedBox.shrink();
+                  return Center(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
                       children: [
-                        ListenableBuilder(
-                          listenable: _game,
-                          builder: (_, _) => Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                'SCORE ${_game.score.floor()}',
-                                style: hudStyle,
-                              ),
-                              Text(
-                                'COINS ${_game.coins}',
-                                style: hudStyle.copyWith(
-                                  color: Colors.amberAccent,
-                                ),
-                              ),
-                            ],
+                        const Text(
+                          'GAME OVER',
+                          style: TextStyle(
+                            fontFamily: 'monospace',
+                            fontSize: 32,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
                           ),
                         ),
-                        const Spacer(),
-                        IconButton.filledTonal(
-                          tooltip: 'Restart',
+                        const SizedBox(height: 8),
+                        Text(
+                          'SCORE ${_game.score.floor()}',
+                          style: const TextStyle(
+                            fontFamily: 'monospace',
+                            fontSize: 20,
+                            color: Colors.white70,
+                          ),
+                        ),
+                        const SizedBox(height: 24),
+                        FilledButton.icon(
                           onPressed: _game.restart,
-                          style: IconButton.styleFrom(
+                          style: FilledButton.styleFrom(
                             shape: const RoundedRectangleBorder(),
                           ),
                           icon: const Icon(Icons.refresh),
+                          label: const Padding(
+                            padding: EdgeInsets.symmetric(
+                              horizontal: 12,
+                              vertical: 12,
+                            ),
+                            child: Text(
+                              'RESTART',
+                              style: TextStyle(
+                                fontFamily: 'monospace',
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
                         ),
                       ],
                     ),
-                  ),
-                  ListenableBuilder(
-                    listenable: _game,
-                    builder: (_, _) {
-                      if (!_game.isOver) return const SizedBox.shrink();
-                      return Center(
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            const Text(
-                              'GAME OVER',
-                              style: TextStyle(
-                                fontFamily: 'monospace',
-                                fontSize: 32,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.white,
-                              ),
-                            ),
-                            const SizedBox(height: 8),
-                            Text(
-                              'SCORE ${_game.score.floor()}',
-                              style: const TextStyle(
-                                fontFamily: 'monospace',
-                                fontSize: 20,
-                                color: Colors.white70,
-                              ),
-                            ),
-                            const SizedBox(height: 24),
-                            FilledButton.icon(
-                              onPressed: _game.restart,
-                              style: FilledButton.styleFrom(
-                                shape: const RoundedRectangleBorder(),
-                              ),
-                              icon: const Icon(Icons.refresh),
-                              label: const Padding(
-                                padding: EdgeInsets.symmetric(
-                                  horizontal: 12,
-                                  vertical: 12,
-                                ),
-                                child: Text(
-                                  'RESTART',
-                                  style: TextStyle(
-                                    fontFamily: 'monospace',
-                                    fontSize: 18,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      );
-                    },
-                  ),
-                ],
+                  );
+                },
               ),
-            );
-          },
+            ],
+          ),
+        );
+      },
     );
   }
 }
@@ -616,6 +621,81 @@ const hudStyle = TextStyle(
   fontWeight: FontWeight.bold,
   color: Colors.white,
 );
+
+const gunIcon = [
+  '     WW     ',
+  '    WYYW    ',
+  '   WYYYYW   ',
+  '   WYYYYW   ',
+  '   WYYYYW   ',
+  '   WYYYYW   ',
+  '   OOOOOO   ',
+  '   OOOOOO   ',
+  '    R  R    ',
+  '    R  R    ',
+  '     RR     ',
+  '            ',
+];
+
+const shieldIcon = [
+  ' CCCCCCCCCC ',
+  'CBBBBBBBBBBC',
+  'CBBWWBBBBBBC',
+  'CBBWBBBBBBBC',
+  'CBBBBBBBBBBC',
+  'CBBBBBBBBBBC',
+  ' CBBBBBBBBC ',
+  '  CBBBBBBC  ',
+  '   CBBBBC   ',
+  '    CBBC    ',
+  '     CC     ',
+  '            ',
+];
+
+const empIcon = [
+  '      PPPPP ',
+  '     PWWWP  ',
+  '    PWWWP   ',
+  '   PWWWP    ',
+  '  PWWWWWWPP ',
+  '  PPPPWWWP  ',
+  '      PWWP  ',
+  '     PWWP   ',
+  '    PWWP    ',
+  '    PWP     ',
+  '   PWP      ',
+  '   PP       ',
+];
+
+const gunIconPalette = <String, Color>{
+  'W': Color(0xFFFFFFFF),
+  'Y': Color(0xFFFFEE58),
+  'O': Color(0xFFFF9800),
+  'R': Color(0xFFE53935),
+};
+
+const shieldIconPalette = <String, Color>{
+  'C': Color(0xFF0097A7),
+  'B': Color(0xFF4DD0E1),
+  'W': Color(0xFFFFFFFF),
+};
+
+const empIconPalette = <String, Color>{
+  'P': Color(0xFFAB47BC),
+  'W': Color(0xFFFFEE58),
+};
+
+List<String> iconFor(Ability a) => switch (a) {
+  Ability.gun => gunIcon,
+  Ability.shield => shieldIcon,
+  Ability.emp => empIcon,
+};
+
+Map<String, Color> iconPaletteFor(Ability a) => switch (a) {
+  Ability.gun => gunIconPalette,
+  Ability.shield => shieldIconPalette,
+  Ability.emp => empIconPalette,
+};
 
 class AbilityBar extends StatelessWidget {
   const AbilityBar({super.key, required this.game});
@@ -666,45 +746,78 @@ class _AbilityButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final ready = progress >= 1;
-    final fillAlpha = active ? 0.7 : (ready ? 0.45 : 0.25);
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        height: 48,
-        decoration: BoxDecoration(
-          color: const Color(0xFF111833),
-          border: Border.all(
-            color: selected ? ability.color : Colors.white24,
-            width: 3,
+    return Semantics(
+      button: true,
+      selected: selected,
+      label: ability.label,
+      child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onTap: onTap,
+        child: Container(
+          height: 76,
+          decoration: BoxDecoration(
+            color: selected
+                ? ability.color.withValues(alpha: 0.18)
+                : const Color(0xFF111833),
+            border: Border.all(
+              color: selected ? ability.color : Colors.white24,
+              width: 3,
+            ),
           ),
-        ),
-        child: Stack(
-          children: [
-            Positioned.fill(
-              child: FractionallySizedBox(
-                alignment: Alignment.centerLeft,
-                widthFactor: progress.clamp(0.0, 1.0),
-                heightFactor: 1,
-                child: ColoredBox(
-                  color: ability.color.withValues(alpha: fillAlpha),
-                ),
-              ),
+          child: CustomPaint(
+            painter: _PixelIconPainter(
+              rows: iconFor(ability),
+              palette: iconPaletteFor(ability),
+              charge: progress.clamp(0.0, 1.0),
             ),
-            Center(
-              child: Text(
-                ability.label,
-                style: hudStyle.copyWith(
-                  fontSize: 14,
-                  color: selected ? Colors.white : Colors.white70,
-                ),
-              ),
-            ),
-          ],
+          ),
         ),
       ),
     );
   }
+}
+
+class _PixelIconPainter extends CustomPainter {
+  _PixelIconPainter({
+    required this.rows,
+    required this.palette,
+    required this.charge,
+  });
+
+  final List<String> rows;
+  final Map<String, Color> palette;
+  final double charge;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final n = rows.length;
+    final ps = (math.min(size.width, size.height) * 0.8 / n).floorToDouble();
+    if (ps < 1) return;
+    final left = ((size.width - ps * n) / 2).floorToDouble();
+    final top = ((size.height - ps * n) / 2).floorToDouble();
+    final paint = Paint()..isAntiAlias = false;
+
+    // Rows fill with color from the bottom up as the ability recharges.
+    final firstLitRow = n * (1 - charge);
+    for (var i = 0; i < n; i++) {
+      final lit = i >= firstLitRow - 0.001;
+      for (var j = 0; j < rows[i].length; j++) {
+        final c = palette[rows[i][j]];
+        if (c == null) continue;
+        paint.color = lit
+            ? c
+            : Color.lerp(c, const Color(0xFF111833), 0.8) ?? c;
+        canvas.drawRect(
+          Rect.fromLTWH(left + j * ps, top + i * ps, ps, ps),
+          paint,
+        );
+      }
+    }
+  }
+
+  @override
+  bool shouldRepaint(_PixelIconPainter old) =>
+      old.charge != charge || old.rows != rows;
 }
 
 class GamePainter extends CustomPainter {
@@ -761,13 +874,24 @@ class GamePainter extends CustomPainter {
 
     for (final s in game.stars) {
       final shade = (90 + 140 * s.depth).round();
-      _fill(canvas, s.x.floorToDouble(), s.y.floorToDouble(), 1, 1,
-          Color.fromARGB(255, shade, shade, shade));
+      _fill(
+        canvas,
+        s.x.floorToDouble(),
+        s.y.floorToDouble(),
+        1,
+        1,
+        Color.fromARGB(255, shade, shade, shade),
+      );
     }
 
     for (final a in game.asteroids) {
-      _sprite(canvas, a.sprite, rockPalette, a.x.round() - a.radius.toDouble(),
-          a.y.round() - a.radius.toDouble());
+      _sprite(
+        canvas,
+        a.sprite,
+        rockPalette,
+        a.x.round() - a.radius.toDouble(),
+        a.y.round() - a.radius.toDouble(),
+      );
     }
 
     for (final u in game.ufos) {
@@ -781,8 +905,14 @@ class GamePainter extends CustomPainter {
     }
 
     for (final b in game.bullets) {
-      _fill(canvas, b.x.round() - 1.0, b.y.roundToDouble() - 2, 2, 4,
-          const Color(0xFFFFEE58));
+      _fill(
+        canvas,
+        b.x.round() - 1.0,
+        b.y.roundToDouble() - 2,
+        2,
+        4,
+        const Color(0xFFFFEE58),
+      );
     }
 
     for (final s in game.shots) {
@@ -831,8 +961,13 @@ class GamePainter extends CustomPainter {
     // Flicker during the last 0.3s so the player sees it running out.
     if (game.shieldActive > 0 &&
         (game.shieldActive > 0.3 || (game.shieldActive * 20).floor().isEven)) {
-      _ring(canvas, cx, top + shipHeight / 2, shieldRadius,
-          const Color(0xFF80F0FF));
+      _ring(
+        canvas,
+        cx,
+        top + shipHeight / 2,
+        shieldRadius,
+        const Color(0xFF80F0FF),
+      );
     }
   }
 
